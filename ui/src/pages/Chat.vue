@@ -16,7 +16,7 @@ import ListSession from '@/components/ListSession.vue'
 import Navigator from '@/components/Navigator.vue'
 import { useChatStore } from '@/store/chat'
 import { storeToRefs } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
 let Sspage = ref(true)
@@ -41,17 +41,19 @@ function checkKnowledge() {
         router.replace({ name: "management" })
     }
 }
-function checkSession(){
-    if(SessionId.value == undefined || SessionId.value == ""){
+function checkSession() {
+    if (SessionId.value == undefined || SessionId.value == "") {
         ts()
     }
 }
-async function init(){
+async function init() {
     await chatStore.init()
-checkKnowledge()
-checkSession()
+    checkKnowledge()
+    checkSession()
 }
-init()
+onMounted(() => {
+    init()
+})
 let kn = computed(() => {
     for (let s of Sessions.value) {
         if (s.sessionid == SessionId.value) {

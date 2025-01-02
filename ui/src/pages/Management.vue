@@ -17,11 +17,13 @@ import ListQA from '@/components/ListQA.vue'
 import Navigator from '@/components/Navigator.vue'
 import { useKnowledgeStore } from '@/store/knowledge'
 import { storeToRefs } from 'pinia'
+import { onMounted } from 'vue'
 
 let knowledgeStore = useKnowledgeStore()
 let { UserKnowledges, QA } = storeToRefs(knowledgeStore)
-knowledgeStore.init()
-
+onMounted(() => {
+    knowledgeStore.init()
+})
 function eqa(knowledgeid: string) {
     knowledgeStore.GetQA(knowledgeid)
     console.log(QA)

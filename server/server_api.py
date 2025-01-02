@@ -2,15 +2,15 @@ from mongo_logic import MongoLogic
 from datetime import datetime
 from emb_model import MyEmbModel
 from emb_db import MyMilvusClient, MyMilvusData
-#from Phi3 import Phi
-from llama31b import Llama321b
+from Phi3 import Phi
+#from llama31b import Llama321b
 import json
 
 
 class API:
     def __init__(self):
         self.ml = MongoLogic()
-        self.llm = Llama321b()
+        self.llm = Phi()
         self.emb = MyEmbModel()
         self.embdb = MyMilvusClient()
 
@@ -18,7 +18,8 @@ class API:
         return self.emb.to_emb(sentence)[0]
 
     def Chat(self, messages):
-        return self.llm.Chat(messages)
+        #return self.llm.Chat(messages)
+        return "I am a chatbot, and I need to summarize the answers based on the user's' found some similar qa 'in order to answer their questions"
 
     def GetSimilaryQ(self, knowledgeid, question):
         category = self.ml.get_knowledge_byid(knowledgeid)["currentversion"]

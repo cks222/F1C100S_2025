@@ -37,7 +37,6 @@ export const useChatStore = defineStore('Chat', {
             this.Sessions.forEach(async (x: any) => {
                 const result = await get(config.api.get.history + "?sessionid=" + x.sessionid)
                 let history = <SessionHistory>{ SessionId: x.sessionid, Messages: [] }
-                let history_lite = <SessionHistory>{ SessionId: x.sessionid, Messages: [] }
                 result.data.forEach((y: any, z: number) => {
                     history.Messages.push({ Role: "user", Content: y["q"], Time: y["qtime"] })
                     history.Messages.push({ Role: "assistant", Content: y["a"], Time: y["atime"] })
@@ -53,26 +52,36 @@ export const useChatStore = defineStore('Chat', {
             this.SelectSession(this.SessionId)
         },
         async SendMessage() {
+            let sid=`${this.SessionId}`
             this.ErrorMessages = ""
             if (this.Question == "") {
                 this.ErrorMessages = "Please input question"
                 return
             }
+            if (this.State == this.State_Sent) {
+                this.ErrorMessages = "Please waitting for the answer"
+                return
+            }
             this.State = this.State_Sent
             var formData = new FormData();
-            let Messages=<Message[]>[]
+            let Messages = <Message[]>[]
             this.SessionHistory.forEach(x => {
-                if (x.SessionId == this.SessionId) {
-                    Messages=x.Messages
+                if (x.SessionId == sid) {
+                    Messages = x.Messages
                 }
             })
             formData.append("history", JSON.stringify(Messages));
             formData.append("question", this.Question);
-            const result = await post(`${config.api.post.chat}?sessionid=${this.SessionId}`, formData)
+            this.SessionHistory.forEach(x => {
+                if (x.SessionId == sid) {
+                    x.Messages.push({ Role: "user", Content: this.Question, Time: "" })
+                }
+            })
+            const result = await post(`${config.api.post.chat}?sessionid=${sid}`, formData)
 
             this.SessionHistory.forEach(x => {
-                if (x.SessionId == this.SessionId) {
-                    x.Messages.push({ Role: "user", Content: result.data["q"], Time: result.data["qtime"] })
+                if (x.SessionId == sid) {
+                    x.Messages[x.Messages.length - 1] = { Role: "user", Content: result.data["q"], Time: result.data["qtime"] }
                     x.Messages.push({ Role: "assistant", Content: result.data["a"], Time: result.data["atime"] })
                 }
             })
@@ -89,7 +98,7 @@ export const useChatStore = defineStore('Chat', {
             SessionHistory: <SessionHistory[]>[],
             Question: "",
             ErrorMessages: "",
-            
+
             State: "Y",
             State_Sent: "X",
             State_Anwserd: "Y",
