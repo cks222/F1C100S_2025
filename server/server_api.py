@@ -28,7 +28,8 @@ class API:
         )
 
     def api_login(self, username: str, encrypted_str: str):
-        self.ml.get_user(username, encrypted_str)
+        if self.ml.get_user(username, encrypted_str) == "":
+            return "no match user"
         return username
 
     def api_hasuser(self, username: str):

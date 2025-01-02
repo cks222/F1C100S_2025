@@ -1,12 +1,15 @@
 from pymongo import MongoClient
 import uuid
+import os
 
 
 class MongoLogic:
     def __init__(self):
-        self.client = MongoClient("mongodb://admin:admin@localhost:27017")
-        # self.client.admin.authenticate("admin", "admin")
-        db_name = "test"
+
+        isProd = os.getenv("isProd") == "true"
+        host = "mongodb" if isProd else "localhost"
+        self.client = MongoClient("mongodb://admin:admin@" + host + ":27017")
+        db_name = "Chat"
         self.db = self.client[db_name]
         self.Usercollection = self.get_col("User")
         self.Knowledgecollection = self.get_col("Knowledge")
@@ -37,7 +40,7 @@ class MongoLogic:
             "$and": [{"data.username": username}, {"data.encrypted_str": encrypted_str}]
         }
         data = self.Usercollection.find_one(query)
-        return data["data"]
+        return "" if data is None else data["data"]
 
     def has_user(self, username: str) -> bool:
         query = {"data.username": username}

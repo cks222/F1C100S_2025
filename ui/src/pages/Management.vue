@@ -1,4 +1,5 @@
 <template>
+    <Navigator></Navigator>
     <div style="display: flex;">
         <div style="width: 350px;">
             <ListKnowledge :uks="UserKnowledges" @addk="knowledgeStore.AddKnowledge"
@@ -13,6 +14,7 @@
 <script name="management" setup lang="ts">
 import ListKnowledge from '@/components/ListKnowledge.vue'
 import ListQA from '@/components/ListQA.vue'
+import Navigator from '@/components/Navigator.vue'
 import { useKnowledgeStore } from '@/store/knowledge'
 import { storeToRefs } from 'pinia'
 

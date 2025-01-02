@@ -64,7 +64,7 @@ let cfmpwd = ref("")
 let errmsg = ref("")
 
 async function signup() {
-   await userStore.signUp(account.value, pwd.value, cfmpwd.value)
+    await userStore.signUp(account.value, pwd.value, cfmpwd.value)
     await login()
 }
 async function login() {

@@ -1,0 +1,11 @@
+python-multipart==0.0.20
+uvicorn==0.34.0
+fastapi==0.115.6
+chardet==5.2.0
+torch==2.5.1
+tokenizers==0.21.0
+accelerate==0.31.0
+transformers==4.47.0
+pymongo==4.10.1
+pymilvus==2.5.2
+sentence-transformers==3.3.1

@@ -1,4 +1,4 @@
-from collections import defaultdict
+import os
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection
 from typing import List
 
@@ -24,7 +24,8 @@ class MyMilvusClient:
         port: str = "19530",
         collection_name: str = "knowledge",
     ):
-        self.host = host
+        isProd = os.getenv('isProd') == 'true'
+        self.host =  "milvus" if isProd else host
         self.port = port
         self.collection_name = collection_name
         self.fields_name = []

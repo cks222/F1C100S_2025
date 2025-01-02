@@ -14,7 +14,7 @@ ui/.vscode
 dist-ssr
 coverage
 *.local
-
+volumes/
 /cypress/videos/
 /cypress/screenshots/
 
