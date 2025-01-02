@@ -1,0 +1,26 @@
+[
+  {
+    "Title":"UserProfileVectorBulk",
+    "Enable":true,
+    "Template":[
+      {"Text":"Check table UserProfileVectorBulk status, "},
+      {"DateFormat":"-1|MM/dd"},
+      {"Target":"r","TValue":"rolledBack","Data":" should"},
+      {"Target":"r","TValue":"skiped","Data":" should"},
+      {"Text":" using merged_"},
+      {"DateFormat":"-3|yyyy_MM_dd"},
+      {"Text":".ss, "},
+      {"Id":"r","SelectData":"success,g|rolledBack,r|skiped,y"}
+    ]
+  },  
+  {
+    "Title":"DailyMsnUserProfilePublish",
+    "Enable":true,
+    "Template":[
+      {"Data":"Check the output of pipeline DailyMsnUserProfilePublish on "},
+      {"DateFormat":"-1|MM/dd"},
+      {"Data":" "},
+      {"SelectData":"ok,g|failure,r"}
+    ]
+  }
+]
