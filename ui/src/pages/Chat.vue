@@ -1,5 +1,4 @@
 <template>
-    <Navigator></Navigator>
     <div style="display: flex;">
         <div v-if="Sspage">
             <ListSession :sss="Sessions" :sid="SessionId" :ks="EnabledKnowledges" :shl="SessionHistory"
@@ -13,7 +12,6 @@
 <script name="management" setup lang="ts">
 import ListRecord from '@/components/ListRecord.vue'
 import ListSession from '@/components/ListSession.vue'
-import Navigator from '@/components/Navigator.vue'
 import { useChatStore } from '@/store/chat'
 import { storeToRefs } from 'pinia'
 import { ref, computed, onMounted } from 'vue'

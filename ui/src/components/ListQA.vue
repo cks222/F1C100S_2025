@@ -1,27 +1,33 @@
 <template>
-    <div v-if="kqa.knowledgeid" @click.stop="uf" class="btn ubtn">Upload File
-        <input type="file" ref="preparedfile" :disabled="isuploading" @change="uploadFile" hidden>
-    </div>
-    <div class="qas">
-        <div class="qa">
-            <div :class="{ 'w100': removelist.length > 0 }"><input type="checkbox" v-model="checkall">All<div
-                    v-if="removelist.length > 0" class="rbtn btn" @click="rmqas">Remove</div>
+
+    <div style="background-color:gainsboro;border-bottom:3px solid gainsboro;border-radius: 5px;">
+        <div class="qas">
+            <div class="qa qah">
+                <div><input type="checkbox" v-model="checkall">All
+                </div>
+                <div style="position: relative;text-align: center;">
+                    <div :class="{ 'w100': removelist.length > 0 }">
+                        <div v-if="removelist.length > 0" class="rbtn btn" @click="rmqas">Remove</div>
+                    </div> question
+                </div>
+                <div style="text-align: center;">answer</div>
             </div>
-            <div>question</div>
-            <div>answer</div>
         </div>
-        <hr>
-        <div v-for="qa in kqa.QAS" :key="qa.id" class="qa qax">
-            <div><input type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)"></div>
-            <div>{{ qa.q }}</div>
-            <div>{{ qa.a }}</div>
+        <div class="qas yscroll">
+            <hr>
+            <div v-for="qa in kqa.QAS" :key="qa.id" class="qa qax">
+                <div><input type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)"></div>
+                <div>{{ qa.q }}</div>
+                <div>{{ qa.a }}</div>
+            </div>
         </div>
     </div>
+    <div style="margin-top: 15px;">
+    <UploadFile /></div>
 </template>
 <script setup lang="ts">
 import { ref, watch, defineProps, defineEmits } from 'vue';
-
-import { useKnowledgeStore } from '@/store/knowledge'
+import UploadFile from './UploadFile.vue';
 import { type KQA } from '@/types';
 const emit = defineEmits(["rmqas"])
 const prop = defineProps({
@@ -31,10 +37,6 @@ const prop = defineProps({
     }
 })
 let checkall = ref(false)
-const preparedfile = ref<HTMLInputElement>()
-let showUpload = ref(false)
-let isuploading = ref(false)
-let knowledgeStore = useKnowledgeStore()
 let removelist = ref<string[]>([])
 function rmqas() {
     var data = new FormData();
@@ -62,29 +64,15 @@ watch(checkall, (v) => {
     }
 });
 
-function uf() {
-        let hie = <HTMLInputElement>preparedfile.value
-        hie.value = ""
-        preparedfile.value?.click()
-}
-
-async function uploadFile() {
-    let files = <FileList>preparedfile.value?.files
-    isuploading.value = true
-    setTimeout(async () => {
-        var formData = new FormData();
-        formData.append('file', files[0]);
-        await knowledgeStore.upload_file(prop.kqa.knowledgeid, formData)
-        let hie = <HTMLInputElement>preparedfile.value
-        hie.value = ""
-        isuploading.value = false
-        knowledgeStore.GetQA(prop.kqa.knowledgeid)
-    }, 0)
-}
 </script>
 <style scoped>
 .qas {
     margin: 5px;
+}
+
+.yscroll {
+    height: 460px;
+    overflow-y: scroll;
 }
 
 .qas>.qa:first-child {
@@ -92,14 +80,23 @@ async function uploadFile() {
 }
 
 .qax {
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid gainsboro;
     font-size: 13px;
+    padding: 1px;
+    line-height: 20px;
+}
+
+.qax>div:nth-child(2) {
+    border-right: 1px solid gainsboro;
 }
 
 .qax:nth-child(2n) {
     background-color: azure;
 }
 
+.qax:nth-child(2n+1) {
+    background-color: white;
+}
 .qa {
     display: flex;
     justify-content: left;
@@ -110,8 +107,9 @@ async function uploadFile() {
 }
 
 .w100 {
-    width: 100px !important;
-    ;
+    position: absolute;
+    left: 0;
+    top: 3px;
 }
 
 .qa>div:nth-child(2) {
@@ -126,25 +124,14 @@ async function uploadFile() {
     word-break: break-all;
 }
 
+.qah>div {
+    background-color: gainsboro;
+}
 
 .btn {
-    display: inline-block;
-    border-radius: 3px;
-    text-align: center;
-    font-weight: initial !important;
-    cursor: pointer;
-    background-color: white;
-    user-select: none;
-}
-.ubtn{
-    margin-top:10px;
-    box-shadow: 0px 0px 3px 3px goldenrod;
-}
-.rbtn{
     font-size: 13px;
-    box-shadow: 0px 0px 3px 3px red;
+    width: 60px;
+
 }
-.btn:hover {
-    background-color: #f0f0f0;
-}
+
 </style>

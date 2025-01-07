@@ -10,8 +10,9 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         },
         async AddKnowledge(knowledgename: string, ispublic: boolean) {
             let path = config.api.get.add_knowledges + "?username=" + this.UserName + "&knowledgename=" + knowledgename + "&ispublic=" + ispublic
-            await get(path)
+            let response = await get(path)
             this.GetUserKnowledges()
+            return response.data
         },
         async updateKnowledge(knowledgeid: string, k: Knowledge) {
             let fd = new FormData()
@@ -26,11 +27,12 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         },
         async GetQA(knowledgeid: string) {
             let start = 0, count = 30
-            let result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + (start++) + "&count=" + count)
+            let result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + start + "&count=" + count)
             this.QA = { knowledgeid: knowledgeid, QAS: [] }
             this.QA.QAS = [].concat(result.data)
             while (result.data.length == count) {
-                result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + (start++) + "&count=" + count)
+                start += count
+                result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + start + "&count=" + count)
                 this.QA.QAS = this.QA.QAS.concat(result.data)
             }
         },

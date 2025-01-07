@@ -48,9 +48,10 @@ class MongoLogic:
         return len(data) > 0
 
     def add_knowledge(self, username: str, knowledgename: str, ispublic: bool):
+        kid=self.getGuid()
         data = {
             "data": {
-                "id": self.getGuid(),
+                "id": kid,
                 "username": username,
                 "knowledgename": knowledgename,
                 "ispublic": ispublic,
@@ -58,6 +59,7 @@ class MongoLogic:
             }
         }
         self.Knowledgecollection.insert_one(data)
+        return kid
 
     def get_knowledges(self, username: str, containspublic: bool):
         if containspublic:
