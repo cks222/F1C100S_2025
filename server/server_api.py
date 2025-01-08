@@ -177,6 +177,7 @@ class API:
         self.embdb.insert_data(data)
         knowledge = self.ml.get_knowledge_byid(knowledgeid)
         knowledge["currentversion"] = version
+        knowledge["haschange"] = False
         return self.ml.edit_knowledge(knowledgeid, knowledge)
 
     def api_add_sessions(self, username: str, knowledgeid: str):

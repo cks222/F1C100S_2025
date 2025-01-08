@@ -1,75 +1,81 @@
 <template>
     <div class="topc"></div>
     <div style="display: flex;justify-content: space-between;">
-        <div v-show="isHidden" class="showsb" @click="isHidden = false ">
+        <div v-show="isHidden" class="showsb" @click="isHidden = false">
             <div></div>
         </div>
-        <div class="leftbar" :class="{ 'is-hidden': isHidden,'not-hidden': !isHidden, }">
-            
+        <div class="leftbar" :class="{ 'is-hidden': isHidden, 'not-hidden': !isHidden, }">
+
             <LeftBar @h="() => { isHidden = true }"></LeftBar>
         </div>
         <div style="flex:1;">
             <RightTop></RightTop>
-
-            <KnowledgeM :uks="UserKnowledges" 
-              :kqa="QA"
-            @addk="knowledgeStore.AddKnowledge"
-                @publick="knowledgeStore.updateKnowledge" @eqa="eqa"
-                @publishk="knowledgeStore.PublishKnowledge"
-               @rmqas="knowledgeStore.RemoveQA"
-                ></KnowledgeM>
+            <RouterView />
         </div>
     </div>
 </template>
 <script setup lang="ts">
 import LeftBar from '@/components/LeftBar.vue'
 import RightTop from '@/components/RightTop.vue'
-import KnowledgeM from '@/components/KnowledgeM.vue'
-import { useKnowledgeStore } from '@/store/knowledge'
-import { storeToRefs } from 'pinia'
-import { ref , onMounted} from 'vue';
+import { RouterView } from 'vue-router';
+import KnowledgeM from '@/pages/KnowledgeM.vue'
+import Chat from '@/pages/ChatPage.vue'
+import { ref } from 'vue';
 let isHidden = ref(false)
-
-let knowledgeStore = useKnowledgeStore()
-let { UserKnowledges, QA } = storeToRefs(knowledgeStore)
-onMounted(() => {
-    knowledgeStore.init()
-})
-function eqa(knowledgeid: string) {
-    knowledgeStore.GetQA(knowledgeid)
-    console.log(QA)
-}
-
 </script>
 <style scoped>
-.topc{
+.topc {
     z-index: 1000;
     position: fixed;
     height: 3px;
     width: 100vw;
-    top:0px;
-    background: linear-gradient(to right, red,yellow,green)
+    top: 0px;
+    background: linear-gradient(to right, red, yellow, green)
 }
+
 .leftbar {
     width: 350px;
 }
 
 
 @keyframes hidelb {
-    0%  { width: 350px; }
-    30% {display: none;}
-    80% { transform: translateX(-100%); }
-    100% { width: 0;display: none;}
+    0% {
+        width: 350px;
+    }
+
+    30% {
+        display: none;
+    }
+
+    80% {
+        transform: translateX(-100%);
+    }
+
+    100% {
+        width: 0;
+        display: none;
+    }
 }
 
 @keyframes showlb {
-    0% { width: 350px;display: block;transform: translateX(-100%); }
-    100% { width: 350px;display: block; transform: translateX(0%); }
+    0% {
+        width: 350px;
+        display: block;
+        transform: translateX(-100%);
+    }
+
+    100% {
+        width: 350px;
+        display: block;
+        transform: translateX(0%);
+    }
 }
+
 .leftbar.not-hidden {
     width: 100%;
     animation: showlb 0.10s forwards;
 }
+
 .leftbar.is-hidden {
     width: 100%;
     animation: hidelb 0.20s forwards;

@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Chat from "@/pages/Chat.vue"
-import Management from "@/pages/Management.vue"
+import ChatPage from "@/pages/ChatPage.vue"
+import KnowledgeM from "@/pages/KnowledgeM.vue"
 import Login from "@/pages/Login.vue"
 
 const router = createRouter({
@@ -17,17 +17,17 @@ const router = createRouter({
         {
             name: "chat",
             path: "/chat",
-            component: Chat,
+            component: ChatPage,
             meta: {
                 title: "询问"
             }
         },
         {
-            name: "management",
-            path: "/management",
-            component: Management,
+            name: "knowledge",
+            path: "/knowledge",
+            component: KnowledgeM,
             meta: {
-                title: "管理"
+                title: "知识"
             }           
         },
         {

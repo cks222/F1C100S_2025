@@ -3,7 +3,6 @@
 </template>
 <script setup lang="ts">
 import Layout from '@/pages/Layout.vue'
-import { RouterView } from 'vue-router';
 </script>
 <style>
 * {
@@ -39,5 +38,12 @@ a:-webkit-any-link {
 .btn:hover {
     color: red;
     border-color: red;
+}
+
+.selectk {
+    width: 300px;
+    font-size: 25px;
+    border-radius: 10px;
+    padding: 3px;
 }
 </style>

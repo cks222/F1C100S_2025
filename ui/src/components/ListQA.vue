@@ -1,5 +1,4 @@
 <template>
-
     <div style="background-color:gainsboro;border-bottom:3px solid gainsboro;border-radius: 5px;">
         <div class="qas">
             <div class="qa qah">
@@ -13,7 +12,7 @@
                 <div style="text-align: center;">answer</div>
             </div>
         </div>
-        <div class="qas yscroll">
+        <div class="qas yscroll" :style="{ 'height': prop.listh + 'px' }">
             <hr>
             <div v-for="qa in kqa.QAS" :key="qa.id" class="qa qax">
                 <div><input type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)"></div>
@@ -22,23 +21,33 @@
             </div>
         </div>
     </div>
-    <div style="margin-top: 15px;">
-    <UploadFile /></div>
+
+    <div v-show="prop.kqa.knowledgeid != prop.AddStr" style="margin-top: 15px;">
+        <UploadFile :kid="prop.kqa.knowledgeid" />
+    </div>
 </template>
 <script setup lang="ts">
 import { ref, watch, defineProps, defineEmits } from 'vue';
 import UploadFile from './UploadFile.vue';
 import { type KQA } from '@/types';
-const emit = defineEmits(["rmqas"])
+const emit = defineEmits(["rmqas", "publish"])
 const prop = defineProps({
     "kqa": {
         type: Object as () => KQA,
         default: () => ({ QAS: [], knowledgeid: "" })
+    },
+    "listh": {
+        type: Number,
+        default: 100
+    },
+    "AddStr": {
+        type: String,
+        default: ""
     }
 })
 let checkall = ref(false)
 let removelist = ref<string[]>([])
-function rmqas() {
+async function rmqas() {
     var data = new FormData();
     let qas: { id: string }[] = []
     removelist.value.forEach(id => {
@@ -46,7 +55,9 @@ function rmqas() {
     });
     data.append("qas", JSON.stringify(qas))
     console.log(prop.kqa.knowledgeid)
-    emit("rmqas", prop.kqa.knowledgeid, data)
+    await emit("rmqas", prop.kqa.knowledgeid, data)
+    removelist.value.length = 0
+    checkall.value = false
 }
 function sel(id: string) {
     if (removelist.value.indexOf(id) >= 0) {
@@ -71,7 +82,6 @@ watch(checkall, (v) => {
 }
 
 .yscroll {
-    height: 460px;
     overflow-y: scroll;
 }
 
@@ -97,6 +107,7 @@ watch(checkall, (v) => {
 .qax:nth-child(2n+1) {
     background-color: white;
 }
+
 .qa {
     display: flex;
     justify-content: left;
@@ -128,10 +139,9 @@ watch(checkall, (v) => {
     background-color: gainsboro;
 }
 
-.btn {
+.rbtn {
     font-size: 13px;
     width: 60px;
 
 }
-
 </style>

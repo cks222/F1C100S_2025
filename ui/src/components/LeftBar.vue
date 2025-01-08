@@ -6,10 +6,10 @@
                 <div></div>
             </div>
             <div class="mylink">
-                <div :class="{ 'actcls': 'chat' == actr }" @click="skip('chat')">Chat</div>
+                <div :class="{ 'actcls': 'chat' == actr }" @click="skip('chat')">🦜 Chat</div>
             </div>
             <div class="mylink">
-                <div :class="{ 'actcls': 'management' == actr }" @click="skip('management')">Knowledge</div>
+                <div :class="{ 'actcls': 'knowledge' == actr }" @click="skip('knowledge')">📚 Knowledge</div>
             </div>
         </div>
     </div>
@@ -28,7 +28,7 @@ const prop=defineProps({
 const emit=defineEmits(["s","h"])
 
 const r = useRouter()
-let actr = ref("")
+let actr = ref("chat")
 function skip(rname: string) {
     if (actr.value == rname || rname==""){
         return

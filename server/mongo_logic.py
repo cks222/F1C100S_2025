@@ -54,6 +54,7 @@ class MongoLogic:
                 "id": kid,
                 "username": username,
                 "knowledgename": knowledgename,
+                "haschange": True,
                 "ispublic": ispublic,
                 "currentversion": "",
             }
@@ -79,6 +80,11 @@ class MongoLogic:
         newvalues = {"$set": {"data": knowledge}}
         self.Knowledgecollection.update_one(query, newvalues)
 
+    def set_knowledge_haschange_true(self, knowledgeid: str):
+        k = self.get_knowledge_byid(knowledgeid)
+        k["haschange"] = True
+        self.edit_knowledge(knowledgeid,k)
+
     def add_qas(self, knowledgeid: str, qas: list[dict]):
         data = []
         for qa in qas:
@@ -95,6 +101,7 @@ class MongoLogic:
                 }
             )
         self.QAcollection.insert_many(data)
+        self.set_knowledge_haschange_true(knowledgeid)
 
     def get_qas(self, knowledgeid: str):
         query = {
@@ -109,6 +116,7 @@ class MongoLogic:
         }
         newvalues = {"$set": {"data.isdisabled": True}}
         self.QAcollection.update_many(query, newvalues)
+        self.set_knowledge_haschange_true(knowledgeid)
 
     def edit_qa(self, knowledgeid: str, qas: list[dict]):
         for qa in qas:
@@ -117,6 +125,7 @@ class MongoLogic:
                 "$set": {"data.q": qa["q"], "data.a": qa["a"], "data.e": qa["e"]}
             }
             self.QAcollection.update_one(query, newvalues)
+        self.set_knowledge_haschange_true(knowledgeid)
 
     def add_new_session(self, username: str, knowledgeid: str):
         sessionid = self.getGuid()

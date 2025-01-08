@@ -26,7 +26,7 @@
 
             </div>
             <div>
-                <div class="btn">Browse file</div>
+                <div v-show="!isuploading" class="btn">Browse file</div>
                 <input type="file" ref="preparedfile" :disabled="isuploading" @change="uf" hidden />
             </div>
         </div>
@@ -34,8 +34,8 @@
 </template>
 <script lang="ts" setup>
 import { ref, defineProps, defineEmits } from 'vue';
-const emit = defineEmits(["uf", "eqa"])
-
+import { useKnowledgeStore } from '@/store/knowledge';
+const knowledgeStore = useKnowledgeStore()
 const prop = defineProps({
     kid: {
         type: String,
@@ -69,16 +69,17 @@ function uploadFile(files: FileList) {
         try {
             var formData = new FormData();
             formData.append('file', files[0]);
-            //emit("uf", prop.kid, formData)
+            await knowledgeStore.upload_file(prop.kid, formData)
             let hie = <HTMLInputElement>preparedfile.value
             hie.value = ""
             isuploading.value = false
-            emit("eqa", prop.kid)
+            knowledgeStore.GetQA(prop.kid)
         } catch {
             isuploading.value = false
             preparedfile.value = undefined
+            errormsg.value = "failed to upload."
         }
-    }, 1000)
+    }, 0)
 }
 
 function drop(e: DragEvent) {
@@ -89,16 +90,7 @@ function drop(e: DragEvent) {
 
 async function uf() {
     let files = <FileList>preparedfile.value?.files
-    isuploading.value = true
-    setTimeout(async () => {
-        var formData = new FormData();
-        formData.append('file', files[0]);
-        emit("uf", prop.kid, formData)
-        let hie = <HTMLInputElement>preparedfile.value
-        hie.value = ""
-        isuploading.value = false
-        emit("eqa", prop.kid)
-    }, 0)
+    uploadFile(files)
 }
 </script>
 <style lang="css" scoped>

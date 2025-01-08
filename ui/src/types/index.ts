@@ -10,6 +10,7 @@ export interface Knowledge {
     id: string,
     knowledgename: string,
     ispublic: boolean,
+    haschange:boolean,
     currentversion: string,
 }
 
