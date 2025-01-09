@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import ChatPage from "@/pages/ChatPage.vue"
 import KnowledgeM from "@/pages/KnowledgeM.vue"
 import Login from "@/pages/Login.vue"
+import Layout from '@/pages/Layout.vue'
 
 const router = createRouter({
     history: createWebHistory(),
@@ -15,20 +16,27 @@ const router = createRouter({
             }
         },
         {
-            name: "chat",
-            path: "/chat",
-            component: ChatPage,
-            meta: {
-                title: "询问"
-            }
-        },
-        {
-            name: "knowledge",
-            path: "/knowledge",
-            component: KnowledgeM,
-            meta: {
-                title: "知识"
-            }           
+            name: "layout",
+            path: "/layout",
+            component: Layout,
+            children: [
+                {
+                    name: "chat",
+                    path: "/chat",
+                    component: ChatPage,
+                    meta: {
+                        title: "询问"
+                    }
+                },
+                {
+                    name: "knowledge",
+                    path: "/knowledge",
+                    component: KnowledgeM,
+                    meta: {
+                        title: "知识"
+                    }
+                }
+            ]
         },
         {
             path: '/',
@@ -39,10 +47,10 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     window.speechSynthesis.cancel();
-    if (to.name != "login" && to.name != "loginUc") {
+    if (to.name != "login") {
         if (localStorage.getItem("userName") != null && localStorage.getItem("token") != null) {
-            if (to.name == "main") {
-                next({ name: "chat" })
+            if (to.name == "layout") {
+                next({ name: "knowledge" })
             } else {
                 next()
             }
@@ -52,7 +60,7 @@ router.beforeEach(async (to, from, next) => {
     } else {
         if (localStorage.getItem("userName") != null && localStorage.getItem("token") != null) {
             if (from != undefined)
-                next("/chat")
+                next("/knowledge")
         }
         next()
     }

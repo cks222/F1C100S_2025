@@ -48,7 +48,7 @@ class MongoLogic:
         return len(data) > 0
 
     def add_knowledge(self, username: str, knowledgename: str, ispublic: bool):
-        kid=self.getGuid()
+        kid = self.getGuid()
         data = {
             "data": {
                 "id": kid,
@@ -83,7 +83,7 @@ class MongoLogic:
     def set_knowledge_haschange_true(self, knowledgeid: str):
         k = self.get_knowledge_byid(knowledgeid)
         k["haschange"] = True
-        self.edit_knowledge(knowledgeid,k)
+        self.edit_knowledge(knowledgeid, k)
 
     def add_qas(self, knowledgeid: str, qas: list[dict]):
         data = []
@@ -131,7 +131,7 @@ class MongoLogic:
         sessionid = self.getGuid()
         data = {
             "data": {
-                "sessionid": sessionid,
+                "id": sessionid,
                 "username": username,
                 "knowledgeid": knowledgeid,
                 "isdisabled": False,
@@ -166,7 +166,17 @@ class MongoLogic:
         data = self.ChatSessioncollection.find(query)
         return [d["data"] for d in data]
 
-    def get_sessions_byid(self, sessionid: str):
-        query = {"data.sessionid": sessionid}
+    def get_session_byid(self, sessionid: str):
+        query = {"data.id": sessionid}
         data = self.ChatSessioncollection.find_one(query)
         return data["data"]
+
+    def edit_session(self, sessionid: str, session: dict):
+        query = {"data.id": sessionid}
+        newvalues = {"$set": {"data": session}}
+        self.ChatSessioncollection.update_one(query, newvalues)
+
+    def set_session_isdisabled_false(self, sessionid: str):
+        s = self.get_session_byid(sessionid)
+        s["isdisabled"] = False
+        self.edit_knowledge(sessionid, s)

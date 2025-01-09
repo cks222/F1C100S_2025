@@ -1,5 +1,5 @@
 export default {
-    host: "http://localhost:1234",
+    host: "",
     textMaxLengthMobile: 220,
     textMaxLengthPC: 300,
     headers: {
@@ -16,6 +16,7 @@ export default {
             qas: "/api/qas",
             sessions: "/api/sessions",
             add_session: "/api/add_session",
+            del_session: "/api/del_session",
             history: "/api/history"
         },
         post: {

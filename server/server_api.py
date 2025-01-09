@@ -1,16 +1,17 @@
+from typing import List
 from mongo_logic import MongoLogic
 from datetime import datetime
 from emb_model import MyEmbModel
-from emb_db import MyMilvusClient, MyMilvusData
-from Phi3 import Phi
-#from llama31b import Llama321b
+from chat_model import MyChatModel
+from emb_db import MyMilvusClient
 import json
 
 
 class API:
     def __init__(self):
+        self.usellm = False
         self.ml = MongoLogic()
-        self.llm = Phi()
+        self.llm = MyChatModel()
         self.emb = MyEmbModel()
         self.embdb = MyMilvusClient()
 
@@ -18,8 +19,7 @@ class API:
         return self.emb.to_emb(sentence)[0]
 
     def Chat(self, messages):
-        #return self.llm.Chat(messages)
-        return "I am a chatbot, and I need to summarize the answers based on the user's' found some similar qa 'in order to answer their questions"
+        return self.llm.Chat(messages)
 
     def GetSimilaryQ(self, knowledgeid, question):
         category = self.ml.get_knowledge_byid(knowledgeid)["currentversion"]
@@ -104,16 +104,15 @@ class API:
     def api_history(self, sessionid: str):
         return self.ml.get_chat_history(sessionid)
 
-    def combine_chatpormpt(self, sessionid: str, chathistory: str, question: str):
-        s = self.ml.get_sessions_byid(sessionid)
+    def combine_chatpormpt(self, sq: List, chathistory: str, question: str):
+
         prompt = [
             {
                 "role": "system",
                 "content": "You are a chatbot, and you need to summarize the answers based on the user's' found some similar qa 'in order to answer their questions",
             }
         ]
-        sq = self.GetSimilaryQ(s["knowledgeid"], question)
-        '''
+        """
         if chathistory != "":
             for h in json.loads(chathistory):
                 prompt.append(
@@ -122,11 +121,11 @@ class API:
                         "content": h.get("content", h.get("Content", "")),
                     }
                 )
-        '''
+        """
         qa = ""
         if len(sq) > 0:
             for q in sq:
-                qa += "question:"+q["question"] +"\nanswer:"+ q["answer"] + "\n"
+                qa += "question:" + q["question"] + "\nanswer:" + q["answer"] + "\n"
         prompt.append(
             {"role": "user", "content": "I found some similar questions:" + qa}
         )
@@ -136,8 +135,12 @@ class API:
     def api_chat(self, sessionid: str, history, question: str):
         sid = sessionid
         qtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        prompt = self.combine_chatpormpt(sid, history, question)
-        a = self.Chat(prompt)
+        s = self.ml.get_session_byid(sid)
+        sq = self.GetSimilaryQ(s["knowledgeid"], question)
+        prompt = self.combine_chatpormpt(sq, history, question)
+        a = sq[0]["answer"]
+        if self.usellm:
+            a = self.Chat(prompt)
         atime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.ml.add_new_history(sid, question, qtime, a, atime, prompt)
         return {"sessionid": sid, "q": question, "qtime": qtime, "a": a, "atime": atime}
@@ -151,7 +154,7 @@ class API:
         data = []
         for qa in qas:
             data.append(
-                MyMilvusData(
+                self.embdb.build_data(
                     category=category, vector=qa["e"], question=qa["q"], answer=qa["a"]
                 )
             )
@@ -167,7 +170,7 @@ class API:
         data = []
         for d in mgdata:
             data.append(
-                MyMilvusData(
+                self.embdb.build_data(
                     category=knowledgeid + version,
                     vector=d["e"],
                     question=d["q"],
@@ -182,3 +185,6 @@ class API:
 
     def api_add_sessions(self, username: str, knowledgeid: str):
         return self.ml.add_new_session(username, knowledgeid)
+
+    def disable_session(self, sessionid: str):
+        return self.ml.set_session_isdisabled_false(sessionid)

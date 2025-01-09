@@ -1,3 +1,4 @@
+'''
 import torch
 import json
 from transformers import pipeline
@@ -16,3 +17,4 @@ class Llama321b:
     def Chat(self, prompt):
         output= self.pipe(json.dumps(prompt))
         return output[0]["generated_text"]
+'''

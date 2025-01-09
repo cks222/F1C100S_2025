@@ -127,12 +127,14 @@ watch(checkall, (v) => {
     flex: 3;
     word-wrap: break-word;
     word-break: break-all;
+    white-space:pre-wrap;
 }
 
 .qa>div:nth-child(3) {
     flex: 4;
     word-wrap: break-word;
     word-break: break-all;
+    white-space:pre-wrap;
 }
 
 .qah>div {

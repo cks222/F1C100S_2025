@@ -71,7 +71,7 @@ async function login() {
     if (!await userStore.login(account.value, pwd.value)) {
         errmsg.value = "账户或密码错误"
     } else {
-        router.replace({ name: "chat" })
+        router.replace({ name: "knowledge" })
     }
 }
 let isShowConfirmPwd = computed(() => {

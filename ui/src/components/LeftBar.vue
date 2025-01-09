@@ -1,39 +1,33 @@
 <template>
     <div>
-        <div class="sidebar" >
+        <div class="sidebar">
             <div class="content" @click="emit('h')">
                 <div></div>
                 <div></div>
             </div>
             <div class="mylink">
-                <div :class="{ 'actcls': 'chat' == actr }" @click="skip('chat')">🦜 Chat</div>
+                <div :class="{ 'actcls': 'knowledge' == actr }" @click="skip('knowledge')">📚 Knowledge</div>
             </div>
             <div class="mylink">
-                <div :class="{ 'actcls': 'knowledge' == actr }" @click="skip('knowledge')">📚 Knowledge</div>
+                <div :class="{ 'actcls': 'chat' == actr }" @click="skip('chat')">🦜 Chat</div>
             </div>
         </div>
     </div>
 </template>
 <script setup lang="ts">
 
-import { ref,defineEmits,defineProps } from 'vue'
-import { useRouter } from 'vue-router'
+import { defineEmits, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 
-const prop=defineProps({
-    "ih":{
-        type:Boolean,
-        default:true
-    }
-})
-const emit=defineEmits(["s","h"])
-
+const emit = defineEmits(["s", "h"])
 const r = useRouter()
-let actr = ref("chat")
+const rt = useRoute()
+
+let actr = computed(() => rt.name)
 function skip(rname: string) {
-    if (actr.value == rname || rname==""){
+    if (actr.value == rname || rname == "") {
         return
     }
-    actr.value = rname
     r.push({ name: rname })
 }
 </script>
@@ -113,12 +107,14 @@ function skip(rname: string) {
     border-radius: 8px;
     background-color: gainsboro;
 }
-.actcls{
+
+.actcls {
     border-radius: 8px;
-    background-color: grey!important;
-    cursor: inherit!important;
+    background-color: grey !important;
+    cursor: inherit !important;
 }
-*{
+
+* {
     user-select: none;
 }
 </style>

@@ -9,6 +9,8 @@
                     <select class="selectk" v-model="knowledgeid" @change="selectSession">
                         <option v-for="k of EnabledKnowledges" :value="k.id">{{ k.knowledgename }}</option>
                     </select>
+                    <div v-if="MessageHistory.length > 0" class="refresh" @click="clearSession"
+                        title="clear chat history">♻</div>
                 </div>
                 <div>
                     <div ref="mh" style="overflow-y: auto;" :style="{ 'height': listh + 'px' }">
@@ -73,11 +75,16 @@ watch(() => {
 watch(State, () => {
     nextTick(() => { mh.value.scrollTop = mh.value.scrollHeight; });
 })
+async function clearSession() {
+    await chatStore.DelSession(SessionId.value)
+    await chatStore.AddSession(knowledgeid.value)
+    await chatStore.GetSessionHistory()
+}
 function selectSession() {
     let notselect = true;
     for (let s of Sessions.value) {
         if (s.knowledgeid == knowledgeid.value) {
-            chatStore.SelectSession(s.sessionid)
+            chatStore.SelectSession(s.id)
             notselect = false;
         }
     }
@@ -88,7 +95,7 @@ function selectSession() {
 onMounted(async () => {
     await chatStore.init()
     for (let s of Sessions.value) {
-        if (s.sessionid == SessionId.value) {
+        if (s.id == SessionId.value) {
             knowledgeid.value = s.knowledgeid
         }
     }
@@ -165,7 +172,20 @@ let listh = computed(() => {
 }
 
 .hc {
+    white-space: pre-wrap;
     padding-top: 10px;
     margin-left: 10px;
+}
+
+.refresh {
+    display: inline-block;
+    font-size: 30px;
+    cursor: pointer;
+    text-align: center;
+    width: 50px;
+}
+
+.refresh:hover {
+    color: red;
 }
 </style>

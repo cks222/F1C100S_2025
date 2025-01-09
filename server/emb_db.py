@@ -1,8 +1,6 @@
 import os
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection
 from typing import List
-
-# from emb_model import MyEmbModel
 from datetime import datetime
 import hashlib
 
@@ -24,8 +22,8 @@ class MyMilvusClient:
         port: str = "19530",
         collection_name: str = "knowledge",
     ):
-        isProd = os.getenv('isProd') == 'true'
-        self.host =  "milvus" if isProd else host
+        isProd = os.getenv("isProd") == "true"
+        self.host = "milvus" if isProd else host
         self.port = port
         self.collection_name = collection_name
         self.fields_name = []
@@ -55,6 +53,16 @@ class MyMilvusClient:
         collection.create_index("vector", index_param)
         collection.load()
         return collection
+
+    def build_data(
+        self, category: str, vector: List[float], question: str, answer: str
+    ):
+        return MyMilvusData(
+            category=category,
+            vector=vector,
+            question=question,
+            answer=answer,
+        )
 
     def insert_data(self, data: List[MyMilvusData]) -> None:
         self._create_collection(
@@ -86,7 +94,10 @@ class MyMilvusClient:
             limit=top_k,
             expr=expr,
         )
-        return [{"question":r.get("question"),"answer":r.get("answer")} for r in results[0]]
+        return [
+            {"question": r.get("question"), "answer": r.get("answer")}
+            for r in results[0]
+        ]
 
     def _delete_collection(self) -> None:
         try:
@@ -110,10 +121,10 @@ class MyMilvusClient:
         if category != "all":
             expr = f" and category == '{category}'"
         results = collection.query(
-            expr='timestamp like"%:%"'+expr,
+            expr='timestamp like"%:%"' + expr,
             offset=offset,
             limit=page_size,
-            output_fields=output_fields
+            output_fields=output_fields,
         )
         return results
 

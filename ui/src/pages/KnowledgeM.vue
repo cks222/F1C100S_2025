@@ -38,7 +38,7 @@
                         <div v-if="isSave" @click="editk(knowledgeid, showk)" class="btn">
                             Save
                         </div>
-                        <div @click="showEdit = false; knowledgeid = tmpid;" class="btn">
+                        <div v-if="showcancel" @click="showEdit = false; knowledgeid = tmpid;" class="btn">
                             Cancel
                         </div>
                     </div>
@@ -87,7 +87,16 @@ let oldname = computed<string>(() => {
     }
     return ""
 })
+let showcancel = computed(() => {
+    if (UserKnowledges.value.length == 0 && AddStr == knowledgeid.value) {
+        return false
+    }
+    return true
+})
 let showpublish = computed(() => {
+    if(showEdit.value){
+        return false;
+    }
     if (knowledgeid.value == AddStr) {
         return false;
     }
@@ -184,7 +193,7 @@ onMounted(async () => {
 })
 let listh = computed(() => {
     let height = document.documentElement.scrollHeight;
-    let result = height - 368;
+    let result = height - 370;
     return result <= 100 ? 100 : result;
 })
 </script>
@@ -255,6 +264,7 @@ textarea:focus {
 }
 
 .publish {
+    margin-top: 10px !important;
     box-shadow: 0px 0px 2px 2px red;
 }
 </style>

@@ -1,7 +1,7 @@
 export interface Session {
     isdisabled: boolean,
     knowledgeid: string,
-    sessionid: string,
+    id: string,
     username: string,
 }
 

@@ -1,3 +1,4 @@
+'''
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 
@@ -35,3 +36,4 @@ class Phi():
     def Chat(self,messages):
         output = self.Pipe(messages, **self.generation_args)
         return output[0]["generated_text"]
+'''

@@ -11,7 +11,7 @@ export const useChatStore = defineStore('Chat', {
 
             let sexist = false
             for (let s of this.Sessions) {
-                if (s.sessionid == this.SessionId) {
+                if (s.id == this.SessionId) {
                     sexist = true
                 }
             }
@@ -24,6 +24,10 @@ export const useChatStore = defineStore('Chat', {
             this.Sessions = result.data
             await this.GetSessionHistory()
         },
+        async DelSession(sessionid: string) {
+            const result = await get(config.api.get.del_session + "?sessionid=" + sessionid)
+            return result.data
+        },
         async GetEnabledKnowledges() {
             const result = await get(config.api.get.knowledges + "?username=" + this.UserName + "&containspublic=true")
             this.EnabledKnowledges = result.data
@@ -35,8 +39,8 @@ export const useChatStore = defineStore('Chat', {
         async GetSessionHistory() {
             this.SessionHistory = []
             this.Sessions.forEach(async (x: any) => {
-                const result = await get(config.api.get.history + "?sessionid=" + x.sessionid)
-                let history = <SessionHistory>{ SessionId: x.sessionid, Messages: [] }
+                const result = await get(config.api.get.history + "?sessionid=" + x.id)
+                let history = <SessionHistory>{ SessionId: x.id, Messages: [] }
                 result.data.forEach((y: any, z: number) => {
                     history.Messages.push({ Role: "user", Content: y["q"], Time: y["qtime"] })
                     history.Messages.push({ Role: "assistant", Content: y["a"], Time: y["atime"] })
@@ -52,7 +56,7 @@ export const useChatStore = defineStore('Chat', {
             this.SelectSession(this.SessionId)
         },
         async SendMessage() {
-            let sid=`${this.SessionId}`
+            let sid = `${this.SessionId}`
             this.ErrorMessages = ""
             if (this.Question == "") {
                 this.ErrorMessages = "Please input question"
