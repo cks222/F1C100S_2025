@@ -1,7 +1,7 @@
 <template>
     <div class="rt">
         <div class="showusetting">
-            <div>{{ userStore.userName }}</div>
+            <div>{{ userStore.UserName }}</div>
             <div class="usetting">
                 <div style="position: relative;">
                     <div class="btn">Change password</div>

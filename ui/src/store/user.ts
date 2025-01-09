@@ -1,52 +1,52 @@
 import { defineStore } from 'pinia'
-import { get, post } from '@/utils/axios'
+import { 
+    check_user,api_login ,api_signup
+ } from '@/utils/axios'
 import config from '@/config'
 import { sha256 } from 'js-sha256'
 
 export const useUserStore = defineStore('user', {
     actions: {
         async checkIsLogin() {
-            if (localStorage.getItem("userName") != null && localStorage.getItem("token") != null) {
-                this.userName = `${localStorage.getItem("userName")}`
-                this.token = `${localStorage.getItem("token")}`
-                return true;
+            if (localStorage.getItem("userid") != null && localStorage.getItem("token") != null) {
+                this.UserId = `${localStorage.getItem("userid")}`
+                this.Token = `${localStorage.getItem("token")}`
+                const data = await check_user(this.UserId, this.Token)
+                return <boolean> data.isuser
             }
-            this.userName = ""
-            this.token = ""
+            this.UserId = ""
+            this.Token = ""
             return false;
         },
         cryptoPass(password: string) {
             let token = sha256(password)
             return token;
         },
-        async login(userName: string, password: string) {
-            var formData = new FormData();
-            formData.append("username", userName);
-            formData.append("token", this.cryptoPass(password));
-            const result = await post(config.api.post.login, formData)
-            console.log(result.data)
-            if (result.data == userName) {
-                this.userName = userName
-                this.token = this.cryptoPass(password)
-                localStorage.setItem("userName", this.userName)
-                localStorage.setItem("token", this.token)
+        async getUserNameById(userid:string){
+            return 
+        },
+        async login(account: string, password: string) {
+            const data = await api_login(account,this.cryptoPass(password))
+            if (data.account == account) {
+                this.UserId = data.userid
+                this.Token = this.cryptoPass(password)
+                localStorage.setItem("userid", this.UserId)
+                localStorage.setItem("token", this.Token)
                 return true
             }
             return false
         },
         logout() {
-            this.userName = ""
-            this.token = ""
+            this.Token = ""
+            this.UserName = ""
+            this.UserId = ""
             localStorage.clear()
         },
         async signUp(username: string, password: string, confirmpassword: string) {
             if (password != confirmpassword) {
                 throw new Error("两次密码不一致")
             }
-            var formData = new FormData();
-            formData.append("username", username);
-            formData.append("token", this.cryptoPass(password));
-            await post(config.api.post.signup, formData)
+            await api_signup(username, this.cryptoPass(password))
         },
         changePassword(username: string, password: string) {
 
@@ -54,8 +54,9 @@ export const useUserStore = defineStore('user', {
     },
     state() {
         return {
-            userName: "",
-            token: "",
+            UserName: "",
+            UserId: "",
+            Token: "",
         }
     }
 })

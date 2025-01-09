@@ -3,17 +3,22 @@
         <div>
             <div class="content">
                 <div style="font-size: 30px;font-weight: bold;">
-                    📚 Knowledge
+                    📚 Knowledge{{ UserKnowledges.length }}
                 </div>
                 <div v-show="!showEdit">
                     <div style="display: flex;">
                         <select class="selectk" v-model="knowledgeid">
                             <option v-for="k in UserKnowledges" :key="k.id" :value="k.id">{{ k.knowledgename }}</option>
                         </select>
-                        <div v-show="knowledgeid != AddStr" style="font-size: 30px;cursor: pointer;" title="edit"
+                        <div v-show="notreadonly.value" style="font-size: 30px;cursor: pointer;" title="edit"
                             @click="clickeditoradd('edit')">
                             ⚒️</div>
                         <div style="font-size: 30px;cursor: pointer;" title="add new" @click="clickeditoradd('add')">➕
+                        </div>
+
+                        <div v-show="!notreadonly.value" style="font-size: 12px;user-select: none;margin-left: 50px;" title="Owner">
+                            <div style="height: 15px;"></div>
+                            <div> created by {{ notreadonly.owner }}</div>
                         </div>
                     </div>
                 </div>
@@ -45,11 +50,11 @@
                 </div>
 
                 <div v-show="!showEdit">
-                    <ListQA :kqa="kqa" :AddStr="AddStr" :listh="listh"
-                        @rmqas="async (knowledgeid: string, data: FormData) => await knowledgeStore.RemoveQA(knowledgeid, data)">
+                    <ListQA :kqa="kqa" :AddStr="AddStr" :listh="listh" :readonly="!notreadonly.value"
+                        @rmqas="async (knowledgeid: string, qas: string) => await knowledgeStore.RemoveQA(knowledgeid, qas)">
                     </ListQA>
                 </div>
-                <div v-show="showpublish" class="btn publish"
+                <div v-show="showpublish&&notreadonly.value" class="btn publish"
                     @click="() => { knowledgeStore.PublishKnowledge(knowledgeid) }">
                     Publish
                 </div>
@@ -66,13 +71,13 @@ import { useKnowledgeStore } from '@/store/knowledge'
 
 const AddStr = "-Add-"
 let knowledgeStore = useKnowledgeStore()
-let { UserKnowledges, QA } = storeToRefs(knowledgeStore)
+let { UserKnowledges, QA, UserId } = storeToRefs(knowledgeStore)
 let kn = ref()
 let showEdit = ref(false)
 let knowledgeid = ref(AddStr)
 let tmpid = ref(AddStr)
 let showk = ref<Knowledge>({
-    username: "",
+    userid: "",
     id: AddStr,
     knowledgename: "",
     haschange: true,
@@ -94,7 +99,7 @@ let showcancel = computed(() => {
     return true
 })
 let showpublish = computed(() => {
-    if(showEdit.value){
+    if (showEdit.value) {
         return false;
     }
     if (knowledgeid.value == AddStr) {
@@ -115,6 +120,17 @@ let kqa = computed<KQA>(() => {
         return { knowledgeid: knowledgeid.value, QAS: [] }
     }
 })
+let notreadonly = computed(() => {
+    let result = false
+    let owner = ""
+    for (let k of UserKnowledges.value) {
+        if (k.id == knowledgeid.value && knowledgeid.value != AddStr) {
+            result = k.userid == UserId.value
+            owner = k.userid
+        }
+    }
+    return { "value": result, "owner": owner }
+})
 let isSave = computed(() => {
     if (knowledgeid.value == AddStr) {
         return false
@@ -129,7 +145,7 @@ let isSave = computed(() => {
 watch(knowledgeid, (newv: string) => {
     if (newv == AddStr) {
         showk.value = {
-            username: "",
+            userid: "",
             id: AddStr,
             knowledgename: "",
             haschange: true,
@@ -141,7 +157,7 @@ watch(knowledgeid, (newv: string) => {
     for (let k of UserKnowledges.value) {
         if (k.id == newv) {
             showk.value = {
-                username: k.username,
+                userid: k.userid,
                 id: k.id,
                 haschange: k.haschange,
                 knowledgename: k.knowledgename,

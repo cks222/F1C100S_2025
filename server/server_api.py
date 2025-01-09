@@ -28,17 +28,24 @@ class API:
             category=knowledgeid + category, vector=vector, top_k=3
         )
 
-    def api_login(self, username: str, encrypted_str: str):
-        if self.ml.get_user(username, encrypted_str) == "":
+    def api_login(self, account: str, encrypted_str: str):
+        if self.ml.login(account, encrypted_str) == "":
             return "no match user"
-        return username
+        return account
 
-    def api_hasuser(self, username: str):
-        return self.ml.has_user(username)
+    def api_login_byid(self, userid: str, encrypted_str: str):
+        if self.ml.login_by_id(userid, encrypted_str) == "":
+            return "no match user"
+        return userid
 
-    def api_signup(self, username: str, encrypted_str: str):
-        self.ml.add_user(username, encrypted_str)
-        return username
+    def api_getuser_byid(self, userid: str):
+        return self.ml.get_user_by_id(userid)
+
+    def api_has_account(self, account: str):
+        return self.ml.api_has_account(account)
+
+    def api_signup(self, account: str, encrypted_str: str):
+        return self.ml.add_user(account, encrypted_str)
 
     def api_upload_file(self, knowledgeid: str, content: str):
         qas = []
@@ -51,17 +58,26 @@ class API:
                 qas.append({"q": q, "a": a, "e": e.tolist()})
         self.ml.add_qas(knowledgeid, qas)
 
-    def get_api_knowledges(self, username: str, containspublic: bool):
-        return self.ml.get_knowledges(username, containspublic)
+    def get_api_knowledges(self, userid: str, containspublic: bool):
+        return self.ml.get_knowledges(userid, containspublic)
 
-    def get_api_addknowledges(self, username: str, knowledgename, ispublic: bool):
-        return self.ml.add_knowledge(username, knowledgename, ispublic)
+    def get_api_addknowledges(self, userid: str, knowledgename, ispublic: bool):
+        return self.ml.add_knowledge(userid, knowledgename, ispublic)
 
     def post_api_updateknowledge(self, knowledgeid: str, knowledge: dict):
         return self.ml.edit_knowledge(knowledgeid, knowledge)
 
     def get_api_qas(self, knowledgeid: str):
-        return self.ml.get_qas(knowledgeid)
+        return [
+            {
+                "id": qa["id"],
+                "isdisabled": qa["isdisabled"],
+                "knowledgeid": qa["knowledgeid"],
+                "a": qa["a"],
+                "q": qa["q"],
+            }
+            for qa in self.ml.get_qas(knowledgeid)
+        ]
 
     def post_api_qa(self, knowledgeid: str, method: str, qas: str):
         qas = json.loads(qas)
@@ -161,8 +177,8 @@ class API:
         self.embdb.insert_data(data)
         self.ml.edit_knowledge(knowledgeid, knowledge)
 
-    def api_sessions(self, username: str):
-        return self.ml.get_sessions(username)
+    def api_sessions(self, userid: str):
+        return self.ml.get_sessions(userid)
 
     def get_publish_knowledge(self, knowledgeid: str):
         version = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -183,8 +199,8 @@ class API:
         knowledge["haschange"] = False
         return self.ml.edit_knowledge(knowledgeid, knowledge)
 
-    def api_add_sessions(self, username: str, knowledgeid: str):
-        return self.ml.add_new_session(username, knowledgeid)
+    def api_add_sessions(self, userid: str, knowledgeid: str):
+        return self.ml.add_new_session(userid, knowledgeid)
 
     def disable_session(self, sessionid: str):
         return self.ml.set_session_isdisabled_false(sessionid)

@@ -2,11 +2,11 @@
     <div style="background-color:gainsboro;border-bottom:3px solid gainsboro;border-radius: 5px;">
         <div class="qas">
             <div class="qa qah">
-                <div><input type="checkbox" v-model="checkall">All
+                <div  v-if="!prop.readonly"><input type="checkbox" v-model="checkall">All
                 </div>
                 <div style="position: relative;text-align: center;">
                     <div :class="{ 'w100': removelist.length > 0 }">
-                        <div v-if="removelist.length > 0" class="rbtn btn" @click="rmqas">Remove</div>
+                        <div v-if="removelist.length > 0 && !prop.readonly" class="rbtn btn" @click="rmqas">Remove</div>
                     </div> question
                 </div>
                 <div style="text-align: center;">answer</div>
@@ -14,15 +14,18 @@
         </div>
         <div class="qas yscroll" :style="{ 'height': prop.listh + 'px' }">
             <hr>
-            <div v-for="qa in kqa.QAS" :key="qa.id" class="qa qax">
-                <div><input type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)"></div>
+            <div v-for="qa,idx in kqa.QAS" :key="qa.id" class="qa qax">
+                <div>
+                    <input   v-if="!prop.readonly" type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)">
+                    <div v-else>{{idx+1  }}</div>
+                </div>
                 <div>{{ qa.q }}</div>
                 <div>{{ qa.a }}</div>
             </div>
         </div>
     </div>
 
-    <div v-show="prop.kqa.knowledgeid != prop.AddStr" style="margin-top: 15px;">
+    <div v-show="prop.kqa.knowledgeid != prop.AddStr && !prop.readonly" style="margin-top: 15px;">
         <UploadFile :kid="prop.kqa.knowledgeid" />
     </div>
 </template>
@@ -43,6 +46,10 @@ const prop = defineProps({
     "AddStr": {
         type: String,
         default: ""
+    },
+    readonly:{
+        type: Boolean,
+        default: true
     }
 })
 let checkall = ref(false)

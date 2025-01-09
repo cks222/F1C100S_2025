@@ -2,11 +2,11 @@ export interface Session {
     isdisabled: boolean,
     knowledgeid: string,
     id: string,
-    username: string,
+    userid: string,
 }
 
 export interface Knowledge {
-    username: string,
+    userid: string,
     id: string,
     knowledgename: string,
     ispublic: boolean,

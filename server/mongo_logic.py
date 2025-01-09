@@ -25,34 +25,46 @@ class MongoLogic:
     def getGuid(self):
         return str(uuid.uuid4())
 
-    def add_user(self, username: str, encrypted_str: str):
+    def add_user(self, account: str, encrypted_str: str):
         data = {
             "data": {
                 "id": self.getGuid(),
-                "username": username,
+                "username": account,
+                "account": account,
                 "encrypted_str": encrypted_str,
             }
         }
         self.Usercollection.insert_one(data)
 
-    def get_user(self, username: str, encrypted_str: str):
+    def login(self, account: str, encrypted_str: str):
         query = {
-            "$and": [{"data.username": username}, {"data.encrypted_str": encrypted_str}]
+            "$and": [{"data.account": account}, {"data.encrypted_str": encrypted_str}]
         }
         data = self.Usercollection.find_one(query)
         return "" if data is None else data["data"]
 
-    def has_user(self, username: str) -> bool:
-        query = {"data.username": username}
+    def login_by_id(self, id: str, encrypted_str: str):
+        query = {"$and": [{"data.id": id}, {"data.encrypted_str": encrypted_str}]}
+        data = self.Usercollection.find_one(query)
+        return "" if data is None else data["data"]
+
+    def get_user_by_id(self, userid: str):
+        query = {"data.id": userid}
+        data = self.Usercollection.find_one(query)
+        user = data["data"]
+        return {"id": user.get("id"), "username": user.get("username"), "account": user.get("account")}
+
+    def api_has_account(self, account: str) -> bool:
+        query = {"data.account": account}
         data = self.Usercollection.find(query)
         return len(data) > 0
 
-    def add_knowledge(self, username: str, knowledgename: str, ispublic: bool):
+    def add_knowledge(self, userid: str, knowledgename: str, ispublic: bool):
         kid = self.getGuid()
         data = {
             "data": {
                 "id": kid,
-                "username": username,
+                "userid": userid,
                 "knowledgename": knowledgename,
                 "haschange": True,
                 "ispublic": ispublic,
@@ -62,11 +74,11 @@ class MongoLogic:
         self.Knowledgecollection.insert_one(data)
         return kid
 
-    def get_knowledges(self, username: str, containspublic: bool):
+    def get_knowledges(self, userid: str, containspublic: bool):
         if containspublic:
-            query = {"$or": [{"data.username": username}, {"data.ispublic": True}]}
+            query = {"$or": [{"data.userid": userid}, {"data.ispublic": True}]}
         else:
-            query = {"data.username": username}
+            query = {"data.userid": userid}
         data = self.Knowledgecollection.find(query)
         return [d["data"] for d in data]
 
@@ -127,12 +139,12 @@ class MongoLogic:
             self.QAcollection.update_one(query, newvalues)
         self.set_knowledge_haschange_true(knowledgeid)
 
-    def add_new_session(self, username: str, knowledgeid: str):
+    def add_new_session(self, userid: str, knowledgeid: str):
         sessionid = self.getGuid()
         data = {
             "data": {
                 "id": sessionid,
-                "username": username,
+                "userid": userid,
                 "knowledgeid": knowledgeid,
                 "isdisabled": False,
             }
@@ -161,8 +173,8 @@ class MongoLogic:
         data = self.ChatHistorycollection.find(query)
         return [d["data"] for d in data]
 
-    def get_sessions(self, username: str):
-        query = {"$and": [{"data.username": username}, {"data.isdisabled": False}]}
+    def get_sessions(self, userid: str):
+        query = {"$and": [{"data.userid": userid}, {"data.isdisabled": False}]}
         data = self.ChatSessioncollection.find(query)
         return [d["data"] for d in data]
 

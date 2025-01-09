@@ -1,72 +1,68 @@
 import { defineStore } from 'pinia'
-import { get, post, postfile } from '@/utils/axios'
+import {
+    get_api_addknowledges, post_api_updateknowledge, api_upload_file, get_api_qas, post_api_qa, get_publish_knowledge, get_api_knowledges
+} from '@/utils/axios'
 import { type Knowledge, type KQA } from '@/types'
 import config from '@/config'
 
 export const useKnowledgeStore = defineStore('Knowledge', {
     actions: {
         async init() {
+            this.UserId = <string>localStorage.getItem("userid")
             return this.GetUserKnowledges()
         },
         async AddKnowledge(knowledgename: string, ispublic: boolean) {
-            let path = config.api.get.add_knowledges + "?username=" + this.UserName + "&knowledgename=" + knowledgename + "&ispublic=" + ispublic
-            let response = await get(path)
+            let data = await get_api_addknowledges(this.UserId, knowledgename, ispublic)
             this.GetUserKnowledges()
-            return response.data
+            return data
         },
         async updateKnowledge(knowledgeid: string, k: Knowledge) {
-            let fd = new FormData()
-            fd.append("knowledge", JSON.stringify(k))
-            let path = config.api.post.updateknowledge + "?knowledgeid=" + knowledgeid
-            await post(path, fd)
+            await post_api_updateknowledge(knowledgeid, JSON.stringify(k))
             this.GetUserKnowledges()
         },
         async upload_file(knowledgeid: string, data: FormData) {
-            let path = config.api.post.upload_file + "?knowledgeid=" + knowledgeid
-            await postfile(path, data)
-            this.SetHasChange(knowledgeid,true)
+            await api_upload_file(knowledgeid, data)
+            this.SetHasChange(knowledgeid, true)
         },
         async GetQA(knowledgeid: string) {
             let totalcount = 0
             let start = 0, count = 30
-            let result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + start + "&count=" + count)
+            let data = await get_api_qas(knowledgeid, start, count)
             this.QA = { knowledgeid: knowledgeid, QAS: [] }
-            this.QA.QAS = [].concat(result.data)
-            totalcount += result.data.length
-            while (result.data.length == count) {
+            this.QA.QAS = [].concat(data)
+            totalcount += data.length
+            while (data.length == count) {
                 start += count
-                result = await get(config.api.get.qas + "?knowledgeid=" + knowledgeid + "&start=" + start + "&count=" + count)
-                this.QA.QAS = this.QA.QAS.concat(result.data)
-                totalcount += result.data.length
+                data = await get_api_qas(knowledgeid, start, count)
+                this.QA.QAS = this.QA.QAS.concat(data)
+                totalcount += data.length
             }
             return totalcount
         },
-        async RemoveQA(knowledgeid: string, data: FormData) {
-            let path = config.api.post.qa + "?method=remove&knowledgeid=" + knowledgeid
-            await postfile(path, data)
+        async RemoveQA(knowledgeid: string, qas: string) {
+            await post_api_qa(knowledgeid, "remove", qas)
             await this.GetQA(knowledgeid)
-            this.SetHasChange(knowledgeid,true)
+            this.SetHasChange(knowledgeid, true)
         },
         async PublishKnowledge(knowledgeid: string) {
-            let path = config.api.get.publish_knowledge + "?knowledgeid=" + knowledgeid
-            await get(path)
+            await get_publish_knowledge(knowledgeid)
             this.GetUserKnowledges()
         },
         async GetUserKnowledges() {
-            const result = await get(config.api.get.knowledges + "?username=" + this.UserName + "&containspublic=false")
-            this.UserKnowledges = result.data
+            const data = await get_api_knowledges(this.UserId, true)
+            this.UserKnowledges = data
         },
-        async SetHasChange(knowledgeid: string,haschange:boolean){
-            this.UserKnowledges.forEach(k=>{
-                if(k.id==knowledgeid){
-                    k.haschange=haschange
+        async SetHasChange(knowledgeid: string, haschange: boolean) {
+            this.UserKnowledges.forEach(k => {
+                if (k.id == knowledgeid) {
+                    k.haschange = haschange
                 }
             })
         }
     },
     state() {
         return {
-            UserName: <string>localStorage.getItem("userName"),
+            UserId: <string>localStorage.getItem("userid"),
             UserKnowledges: <Knowledge[]>[],
             QA: <KQA>{},
         }

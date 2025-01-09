@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia'
-import { get, post } from '@/utils/axios'
+import {
+    api_sessions, api_add_sessions, api_del_sessions, get_api_knowledges, api_history, api_chat
+} from '@/utils/axios'
 import config from '@/config';
 import { type Session, type Knowledge, type Message, type SessionHistory } from '@/types';
 
 export const useChatStore = defineStore('Chat', {
     actions: {
         async init() {
+            this.UserId = <string>localStorage.getItem("userid")
+            this.SessionId = <string>localStorage.getItem("sessionid")
             await this.GetSessions()
             await this.GetEnabledKnowledges()
 
@@ -20,17 +24,17 @@ export const useChatStore = defineStore('Chat', {
             }
         },
         async GetSessions() {
-            const result = await get(config.api.get.sessions + "?username=" + this.UserName)
-            this.Sessions = result.data
+            const data = await api_sessions(this.UserId)
+            this.Sessions = data
             await this.GetSessionHistory()
         },
         async DelSession(sessionid: string) {
-            const result = await get(config.api.get.del_session + "?sessionid=" + sessionid)
-            return result.data
+            const data = await api_del_sessions(sessionid)
+            return data
         },
         async GetEnabledKnowledges() {
-            const result = await get(config.api.get.knowledges + "?username=" + this.UserName + "&containspublic=true")
-            this.EnabledKnowledges = result.data
+            const data = await get_api_knowledges(this.UserId, true)
+            this.EnabledKnowledges = data
         },
         SelectSession(sessionid: string) {
             localStorage.setItem("sessionid", sessionid)
@@ -39,9 +43,9 @@ export const useChatStore = defineStore('Chat', {
         async GetSessionHistory() {
             this.SessionHistory = []
             this.Sessions.forEach(async (x: any) => {
-                const result = await get(config.api.get.history + "?sessionid=" + x.id)
+                const data = await api_history(x.id)
                 let history = <SessionHistory>{ SessionId: x.id, Messages: [] }
-                result.data.forEach((y: any, z: number) => {
+                data.forEach((y: any, z: number) => {
                     history.Messages.push({ Role: "user", Content: y["q"], Time: y["qtime"] })
                     history.Messages.push({ Role: "assistant", Content: y["a"], Time: y["atime"] })
                 })
@@ -49,9 +53,8 @@ export const useChatStore = defineStore('Chat', {
             })
         },
         async AddSession(knowledgeid: string) {
-            let path = config.api.get.add_session + "?username=" + this.UserName + "&knowledgeid=" + knowledgeid
-            let response = await get(path)
-            this.SessionId = response.data
+            let data = await api_add_sessions(this.UserId, knowledgeid)
+            this.SessionId = data
             await this.GetSessions()
             this.SelectSession(this.SessionId)
         },
@@ -67,26 +70,23 @@ export const useChatStore = defineStore('Chat', {
                 return
             }
             this.State = this.State_Sent
-            var formData = new FormData();
             let Messages = <Message[]>[]
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
                     Messages = x.Messages
                 }
             })
-            formData.append("history", JSON.stringify(Messages));
-            formData.append("question", this.Question);
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
                     x.Messages.push({ Role: "user", Content: this.Question, Time: "" })
                 }
             })
-            const result = await post(`${config.api.post.chat}?sessionid=${sid}`, formData)
+            const data = await api_chat(sid, JSON.stringify(Messages), this.Question)
 
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
-                    x.Messages[x.Messages.length - 1] = { Role: "user", Content: result.data["q"], Time: result.data["qtime"] }
-                    x.Messages.push({ Role: "assistant", Content: result.data["a"], Time: result.data["atime"] })
+                    x.Messages[x.Messages.length - 1] = { Role: "user", Content: data["q"], Time: data["qtime"] }
+                    x.Messages.push({ Role: "assistant", Content: data["a"], Time: data["atime"] })
                 }
             })
             this.Question = ""
@@ -95,7 +95,7 @@ export const useChatStore = defineStore('Chat', {
     },
     state() {
         return {
-            UserName: <string>localStorage.getItem("userName"),
+            UserId: <string>localStorage.getItem("userid"),
             SessionId: <string>localStorage.getItem("sessionid"),
             Sessions: <Session[]>[],
             EnabledKnowledges: <Knowledge[]>[],

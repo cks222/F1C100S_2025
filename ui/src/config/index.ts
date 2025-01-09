@@ -1,5 +1,5 @@
 export default {
-    host: "",
+    host:  "http://localhost:1234",
     textMaxLengthMobile: 220,
     textMaxLengthPC: 300,
     headers: {
@@ -21,6 +21,7 @@ export default {
         },
         post: {
             login: "/api/login",
+            check_user: "/api/check_user",
             signup: "/api/signup",
             upload_file: "/api/upload_file",
             updateknowledge: "/api/updateknowledge",
