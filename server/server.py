@@ -49,7 +49,8 @@ def api_getuser_byid(userid: str):
 
 @app.post("/api/check_user")
 def check_user(userid: str = Form(...), token: str = Form(...)):
-    return {"isuser": a.api_login_byid(userid, token) == userid}
+    user=a.api_login_byid(userid, token)
+    return {"isuser": user["id"] == userid,"username":user["username"] }
 
 
 @app.get("/api/has_account")
@@ -131,4 +132,4 @@ async def redirect_404(request, exec):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=1234)
+    uvicorn.run(app, host="0.0.0.0", port=1234)

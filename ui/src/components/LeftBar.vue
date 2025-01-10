@@ -33,7 +33,7 @@ function skip(rname: string) {
 </script>
 <style lang="css" scoped>
 .sidebar {
-    background-color: rgb(132, 157, 180);
+    background-color:#F0F2F6;
     width: 100%;
     transition: transform 0.3s ease;
     height: 100vh;
@@ -105,12 +105,12 @@ function skip(rname: string) {
 
 .mylink>div:hover {
     border-radius: 8px;
-    background-color: gainsboro;
+    background-color:  #F0F2F6;
 }
 
 .actcls {
     border-radius: 8px;
-    background-color: grey !important;
+    background-color: #dadfe9 !important;
     cursor: inherit !important;
 }
 

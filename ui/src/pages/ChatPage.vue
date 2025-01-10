@@ -102,7 +102,7 @@ onMounted(async () => {
 })
 let listh = computed(() => {
     let height = document.documentElement.scrollHeight;
-    let result = height - 268;
+    let result = height - 288;
     return result <= 100 ? 100 : result;
 })
 
@@ -129,7 +129,7 @@ let listh = computed(() => {
 .userpannel {
     border-radius: 5px;
     border: 1px solid transparent;
-    background-color: gainsboro;
+    background-color: #F0F2F6;
     display: flex;
     margin-top: 30px;
 }

@@ -29,14 +29,10 @@ class API:
         )
 
     def api_login(self, account: str, encrypted_str: str):
-        if self.ml.login(account, encrypted_str) == "":
-            return "no match user"
-        return account
+        return self.ml.login(account, encrypted_str)
 
     def api_login_byid(self, userid: str, encrypted_str: str):
-        if self.ml.login_by_id(userid, encrypted_str) == "":
-            return "no match user"
-        return userid
+        return self.ml.login_by_id(userid, encrypted_str)
 
     def api_getuser_byid(self, userid: str):
         return self.ml.get_user_by_id(userid)

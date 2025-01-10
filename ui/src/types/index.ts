@@ -7,6 +7,7 @@ export interface Session {
 
 export interface Knowledge {
     userid: string,
+    username: string,
     id: string,
     knowledgename: string,
     ispublic: boolean,

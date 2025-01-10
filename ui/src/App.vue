@@ -33,7 +33,7 @@ a:-webkit-any-link {
     font-size: 16px;
     border-radius: 5px;
     border: 1px solid gray;
-    background-color: aliceblue;
+    background-color: #F0F2F6;
 }
 
 .btn:hover {

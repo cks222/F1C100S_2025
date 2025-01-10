@@ -99,7 +99,7 @@ async function uf() {
 }
 
 .ufp {
-    background-color: gainsboro;
+    background-color: #F0F2F6;
     height: 80px;
     display: flex;
     justify-content: space-between;
@@ -141,7 +141,6 @@ async function uf() {
 
 .ufp>div:nth-child(2) {
     flex: 1;
-    color: rgb(49, 51, 63);
 }
 
 .ufp>div:nth-child(2)>div:first-child {

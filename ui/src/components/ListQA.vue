@@ -1,5 +1,5 @@
 <template>
-    <div style="background-color:gainsboro;border-bottom:3px solid gainsboro;border-radius: 5px;">
+    <div style="background-color:#F0F2F6;border-bottom:3px solid #F0F2F6;border-radius: 5px;">
         <div class="qas">
             <div class="qa qah">
                 <div  v-if="!prop.readonly"><input type="checkbox" v-model="checkall">All
@@ -55,14 +55,11 @@ const prop = defineProps({
 let checkall = ref(false)
 let removelist = ref<string[]>([])
 async function rmqas() {
-    var data = new FormData();
     let qas: { id: string }[] = []
     removelist.value.forEach(id => {
         qas.push({ "id": id })
     });
-    data.append("qas", JSON.stringify(qas))
-    console.log(prop.kqa.knowledgeid)
-    await emit("rmqas", prop.kqa.knowledgeid, data)
+    await emit("rmqas", prop.kqa.knowledgeid, JSON.stringify(qas))
     removelist.value.length = 0
     checkall.value = false
 }
@@ -97,14 +94,14 @@ watch(checkall, (v) => {
 }
 
 .qax {
-    border-bottom: 1px solid gainsboro;
+    border-bottom: 1px solid #F0F2F6;
     font-size: 13px;
     padding: 1px;
     line-height: 20px;
 }
 
 .qax>div:nth-child(2) {
-    border-right: 1px solid gainsboro;
+    border-right: 1px solid #F0F2F6;
 }
 
 .qax:nth-child(2n) {
@@ -145,7 +142,7 @@ watch(checkall, (v) => {
 }
 
 .qah>div {
-    background-color: gainsboro;
+    background-color: #F0F2F6;
 }
 
 .rbtn {

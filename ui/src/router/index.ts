@@ -49,8 +49,8 @@ async function checklogin() {
     if (localStorage.getItem("userid") != null && localStorage.getItem("token") != null) {
         let userid = `${localStorage.getItem("userid")}`
         let token = `${localStorage.getItem("token")}`
-        const response = await check_user(userid, token)
-        let result = <boolean>response.data.isuser
+        const data = await check_user(userid, token)
+        let result = <boolean>data.isuser
         if (!result) {
             localStorage.clear()
         }

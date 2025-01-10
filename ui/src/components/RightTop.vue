@@ -61,7 +61,7 @@ function logout() {
     position: absolute;
     border-radius: 5px;
     padding: 0 5px 5px 5px;
-    background-color: gainsboro;
+    background-color: #F0F2F6;
     opacity: 0.8;
 }
 

@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { 
     check_user,api_login ,api_signup
  } from '@/utils/axios'
-import config from '@/config'
 import { sha256 } from 'js-sha256'
 
 export const useUserStore = defineStore('user', {
@@ -12,10 +11,12 @@ export const useUserStore = defineStore('user', {
                 this.UserId = `${localStorage.getItem("userid")}`
                 this.Token = `${localStorage.getItem("token")}`
                 const data = await check_user(this.UserId, this.Token)
+                this.UserName = data.username
                 return <boolean> data.isuser
             }
             this.UserId = ""
-            this.Token = ""
+            this.Token = ""  
+            this.UserName = "" 
             return false;
         },
         cryptoPass(password: string) {
@@ -26,9 +27,11 @@ export const useUserStore = defineStore('user', {
             return 
         },
         async login(account: string, password: string) {
+            
             const data = await api_login(account,this.cryptoPass(password))
-            if (data.account == account) {
-                this.UserId = data.userid
+            console.log(data)
+            if (data.id != "") {
+                this.UserId = data.id
                 this.Token = this.cryptoPass(password)
                 localStorage.setItem("userid", this.UserId)
                 localStorage.setItem("token", this.Token)
@@ -42,11 +45,11 @@ export const useUserStore = defineStore('user', {
             this.UserId = ""
             localStorage.clear()
         },
-        async signUp(username: string, password: string, confirmpassword: string) {
+        async signUp(account: string, password: string, confirmpassword: string) {
             if (password != confirmpassword) {
                 throw new Error("两次密码不一致")
             }
-            await api_signup(username, this.cryptoPass(password))
+            await api_signup(account, this.cryptoPass(password))
         },
         changePassword(username: string, password: string) {
 

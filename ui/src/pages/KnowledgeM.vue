@@ -3,7 +3,7 @@
         <div>
             <div class="content">
                 <div style="font-size: 30px;font-weight: bold;">
-                    📚 Knowledge{{ UserKnowledges.length }}
+                    📚 Knowledge
                 </div>
                 <div v-show="!showEdit">
                     <div style="display: flex;">
@@ -16,9 +16,13 @@
                         <div style="font-size: 30px;cursor: pointer;" title="add new" @click="clickeditoradd('add')">➕
                         </div>
 
-                        <div v-show="!notreadonly.value" style="font-size: 12px;user-select: none;margin-left: 50px;" title="Owner">
+                        <div v-show="!notreadonly.value" style="user-select: none;margin-left: 50px;" title="Owner">
                             <div style="height: 15px;"></div>
-                            <div> created by {{ notreadonly.owner }}</div>
+                            <div>
+                                <label style="font-size: 12px;">created by </label>
+                                <label style="font-size: 16px;font-weight: bold;"> {{ notreadonly.owner }} </label>
+                                <label style="font-size: 12px;"> at {{ notreadonly.version }}</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -54,7 +58,7 @@
                         @rmqas="async (knowledgeid: string, qas: string) => await knowledgeStore.RemoveQA(knowledgeid, qas)">
                     </ListQA>
                 </div>
-                <div v-show="showpublish&&notreadonly.value" class="btn publish"
+                <div v-show="showpublish && notreadonly.value" class="btn publish"
                     @click="() => { knowledgeStore.PublishKnowledge(knowledgeid) }">
                     Publish
                 </div>
@@ -78,6 +82,7 @@ let knowledgeid = ref(AddStr)
 let tmpid = ref(AddStr)
 let showk = ref<Knowledge>({
     userid: "",
+    username: "",
     id: AddStr,
     knowledgename: "",
     haschange: true,
@@ -123,13 +128,15 @@ let kqa = computed<KQA>(() => {
 let notreadonly = computed(() => {
     let result = false
     let owner = ""
+    let at = ""
     for (let k of UserKnowledges.value) {
         if (k.id == knowledgeid.value && knowledgeid.value != AddStr) {
             result = k.userid == UserId.value
-            owner = k.userid
+            owner = k.username
+            at = k.currentversion.split('.')[0] 
         }
     }
-    return { "value": result, "owner": owner }
+    return { "value": result, "owner": owner, "version": at}
 })
 let isSave = computed(() => {
     if (knowledgeid.value == AddStr) {
@@ -146,6 +153,7 @@ watch(knowledgeid, (newv: string) => {
     if (newv == AddStr) {
         showk.value = {
             userid: "",
+            username: "",
             id: AddStr,
             knowledgename: "",
             haschange: true,
@@ -158,6 +166,7 @@ watch(knowledgeid, (newv: string) => {
         if (k.id == newv) {
             showk.value = {
                 userid: k.userid,
+                username: "",
                 id: k.id,
                 haschange: k.haschange,
                 knowledgename: k.knowledgename,
@@ -261,7 +270,7 @@ textarea:focus {
     cursor: pointer;
     border: 1px solid transparent;
     flex: 1;
-    background-color: gainsboro;
+    background-color: #F0F2F6;
 
 }
 

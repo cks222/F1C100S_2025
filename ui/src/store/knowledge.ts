@@ -4,6 +4,7 @@ import {
 } from '@/utils/axios'
 import { type Knowledge, type KQA } from '@/types'
 import config from '@/config'
+import type KnowledgeM from '@/pages/KnowledgeM.vue'
 
 export const useKnowledgeStore = defineStore('Knowledge', {
     actions: {
@@ -50,6 +51,12 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         },
         async GetUserKnowledges() {
             const data = await get_api_knowledges(this.UserId, true)
+            this.UserKnowledges=[]
+            data.forEach((k:Knowledge) => {
+                if(k.currentversion!=""){
+                    this.UserKnowledges.push(k)
+                }
+            });
             this.UserKnowledges = data
         },
         async SetHasChange(knowledgeid: string, haschange: boolean) {
@@ -64,6 +71,7 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         return {
             UserId: <string>localStorage.getItem("userid"),
             UserKnowledges: <Knowledge[]>[],
+            UserIdName: <Knowledge[]>[],
             QA: <KQA>{},
         }
     }

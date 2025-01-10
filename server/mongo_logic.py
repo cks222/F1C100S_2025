@@ -41,18 +41,29 @@ class MongoLogic:
             "$and": [{"data.account": account}, {"data.encrypted_str": encrypted_str}]
         }
         data = self.Usercollection.find_one(query)
-        return "" if data is None else data["data"]
+        return (
+            {"id": "", "username": "", "message": "no that user"}
+            if data is None
+            else {"id": data["data"]["id"], "username": data["data"]["username"]}
+        )
 
     def login_by_id(self, id: str, encrypted_str: str):
         query = {"$and": [{"data.id": id}, {"data.encrypted_str": encrypted_str}]}
         data = self.Usercollection.find_one(query)
-        return "" if data is None else data["data"]
+        return (
+            {"id": "", "username": "", "message": "no that user"}
+            if data is None
+            else {"id": data["data"]["id"], "username": data["data"]["username"]}
+        )
 
     def get_user_by_id(self, userid: str):
         query = {"data.id": userid}
         data = self.Usercollection.find_one(query)
-        user = data["data"]
-        return {"id": user.get("id"), "username": user.get("username"), "account": user.get("account")}
+        return (
+            {"id": "", "username": "", "message": "no that user"}
+            if data is None
+            else {"id": data["data"]["id"], "username": data["data"]["username"]}
+        )
 
     def api_has_account(self, account: str) -> bool:
         query = {"data.account": account}
@@ -79,8 +90,40 @@ class MongoLogic:
             query = {"$or": [{"data.userid": userid}, {"data.ispublic": True}]}
         else:
             query = {"data.userid": userid}
-        data = self.Knowledgecollection.find(query)
-        return [d["data"] for d in data]
+        # data = self.Knowledgecollection.find(query)
+        # return [d["data"] for d in data]
+
+        pipeline = [
+            {"$match": query},
+            {
+                "$lookup": {
+                    "from": "User",
+                    "localField": "data.userid",
+                    "foreignField": "data.id",
+                    "as": "user_info",
+                }
+            },
+            {
+                "$unwind": {
+                    "path": "$user_info",
+                    "includeArrayIndex": "0",
+                    "preserveNullAndEmptyArrays": True,
+                }
+            },
+            {
+                "$project": {
+                    "id": "$data.id",
+                    "userid": "$data.userid",
+                    "username": "$user_info.data.username",
+                    "knowledgename": "$data.knowledgename",
+                    "haschange": "$data.haschange",
+                    "ispublic": "$data.ispublic",
+                    "currentversion": "$data.currentversion",
+                }
+            },
+        ]
+        data = self.Knowledgecollection.aggregate(pipeline)
+        return[{key: value for key, value in item.items() if key != '_id'} for item in list(data)]
 
     def get_knowledge_byid(self, knowledgeid: str):
         query = {"data.id": knowledgeid}
