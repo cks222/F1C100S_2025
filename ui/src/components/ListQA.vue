@@ -2,7 +2,7 @@
     <div style="background-color:#F0F2F6;border-bottom:3px solid #F0F2F6;border-radius: 5px;">
         <div class="qas">
             <div class="qa qah">
-                <div  v-if="!prop.readonly"><input type="checkbox" v-model="checkall">All
+                <div v-if="!prop.readonly"><input type="checkbox" v-model="checkall">All
                 </div>
                 <div style="position: relative;text-align: center;">
                     <div :class="{ 'w100': removelist.length > 0 }">
@@ -14,10 +14,11 @@
         </div>
         <div class="qas yscroll" :style="{ 'height': prop.listh + 'px' }">
             <hr>
-            <div v-for="qa,idx in kqa.QAS" :key="qa.id" class="qa qax">
+            <div v-for="qa, idx in kqa.QAS" :key="qa.id" class="qa qax">
                 <div>
-                    <input   v-if="!prop.readonly" type="checkbox" :checked="removelist.indexOf(qa.id) >= 0" @click.stop="sel(qa.id)">
-                    <div v-else>{{idx+1  }}</div>
+                    <input v-if="!prop.readonly" type="checkbox" :checked="removelist.indexOf(qa.id) >= 0"
+                        @click.stop="sel(qa.id)">
+                    <div v-else>{{ idx + 1 }}</div>
                 </div>
                 <div>{{ qa.q }}</div>
                 <div>{{ qa.a }}</div>
@@ -47,7 +48,7 @@ const prop = defineProps({
         type: String,
         default: ""
     },
-    readonly:{
+    readonly: {
         type: Boolean,
         default: true
     }
@@ -131,14 +132,16 @@ watch(checkall, (v) => {
     flex: 3;
     word-wrap: break-word;
     word-break: break-all;
-    white-space:pre-wrap;
+    white-space: pre-wrap;
+    padding:5px ;
 }
 
 .qa>div:nth-child(3) {
     flex: 4;
     word-wrap: break-word;
     word-break: break-all;
-    white-space:pre-wrap;
+    white-space: pre-wrap;
+    padding:5px ;
 }
 
 .qah>div {

@@ -1,19 +1,20 @@
 from typing import List
-from mongo_logic import MongoLogic
+from db_logic import DBLogic
 from datetime import datetime
 from emb_model import MyEmbModel
 from chat_model import MyChatModel
-from emb_db import MyMilvusClient
+from emb_db_local import MyEmbDbClient
 import json
 
 
 class API:
     def __init__(self):
         self.usellm = False
-        self.ml = MongoLogic()
+        self.autoPublish = True
+        self.ml = DBLogic()
         self.llm = MyChatModel()
         self.emb = MyEmbModel()
-        self.embdb = MyMilvusClient()
+        self.embdb = MyEmbDbClient()
 
     def ToEmb(self, sentence):
         return self.emb.to_emb(sentence)[0]
@@ -22,10 +23,9 @@ class API:
         return self.llm.Chat(messages)
 
     def GetSimilaryQ(self, knowledgeid, question):
-        category = self.ml.get_knowledge_byid(knowledgeid)["currentversion"]
         vector = self.ToEmb(question)
         return self.embdb.search_similar(
-            category=knowledgeid + category, vector=vector, top_k=3
+            knowledgeid=knowledgeid, vector=vector, top_k=3
         )
 
     def api_login(self, account: str, encrypted_str: str):
@@ -53,6 +53,8 @@ class API:
                 e = qa.get("e", qa.get("embedding", self.ToEmb(q)))
                 qas.append({"q": q, "a": a, "e": e.tolist()})
         self.ml.add_qas(knowledgeid, qas)
+        if self.autoPublish:
+            self.get_publish_knowledge(knowledgeid)
 
     def get_api_knowledges(self, userid: str, containspublic: bool):
         return self.ml.get_knowledges(userid, containspublic)
@@ -112,6 +114,8 @@ class API:
             self.ml.edit_qa(knowledgeid, eqas)
         else:
             pass
+        if self.autoPublish:
+            self.get_publish_knowledge(knowledgeid)
 
     def api_history(self, sessionid: str):
         return self.ml.get_chat_history(sessionid)
@@ -150,13 +154,17 @@ class API:
         s = self.ml.get_session_byid(sid)
         sq = self.GetSimilaryQ(s["knowledgeid"], question)
         prompt = self.combine_chatpormpt(sq, history, question)
-        a = sq[0]["answer"]
-        if self.usellm:
-            a = self.Chat(prompt)
-        atime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.ml.add_new_history(sid, question, qtime, a, atime, prompt)
-        return {"sessionid": sid, "q": question, "qtime": qtime, "a": a, "atime": atime}
 
+        sqdata=[{"question":s["question"],"answer":s["answer"]} for s in sq]
+        a = {"useLLM":self.usellm,"text":"","jsontext":json.dumps(sqdata)}
+        if self.usellm:
+            a["text"] = self.Chat(prompt)
+            a["jsontext"]="[]"
+        aj=json.dumps(a)
+        atime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.ml.add_new_history(sid, question, qtime, aj, atime, prompt)
+        return {"sessionid": sid, "q": question, "qtime": qtime, "a": aj, "atime": atime}
+    '''
     def api_build_knowledge(self, knowledgeid: str):
         qas = self.ml.get_qas(knowledgeid)
         knowledge = self.ml.get_knowledge_byid(knowledgeid)
@@ -170,9 +178,9 @@ class API:
                     category=category, vector=qa["e"], question=qa["q"], answer=qa["a"]
                 )
             )
-        self.embdb.insert_data(data)
+        self.embdb.insert_data(knowledgeid,data)
         self.ml.edit_knowledge(knowledgeid, knowledge)
-
+    '''
     def api_sessions(self, userid: str):
         return self.ml.get_sessions(userid)
 
@@ -189,7 +197,8 @@ class API:
                     answer=d["a"],
                 )
             )
-        self.embdb.insert_data(data)
+        if len(data)>0:
+            self.embdb.insert_data(knowledgeid,data)
         knowledge = self.ml.get_knowledge_byid(knowledgeid)
         knowledge["currentversion"] = version
         knowledge["haschange"] = False

@@ -43,7 +43,18 @@ export interface SessionHistory {
 export interface Message {
     Role: string,
     Content: string,
+    AssistantAnswer?: AssistantAnswer,
     Time: string
+}
+
+export interface AssistantAnswer {
+    useLLM: boolean,
+    text: string,
+    jsontext:AssistantQA[]
+}
+export interface AssistantQA {
+    question: boolean,
+    answer: string
 }
 export interface SessionDisplay {
     SessionId: string,

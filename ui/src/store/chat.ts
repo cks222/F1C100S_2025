@@ -3,7 +3,8 @@ import {
     api_sessions, api_add_sessions, api_del_sessions, get_api_knowledges, api_history, api_chat
 } from '@/utils/axios'
 import config from '@/config';
-import { type Session, type Knowledge, type Message, type SessionHistory } from '@/types';
+import { type Session, type Knowledge, type Message, type SessionHistory, type AssistantAnswer, type AssistantQA } from '@/types';
+
 
 export const useChatStore = defineStore('Chat', {
     actions: {
@@ -47,7 +48,14 @@ export const useChatStore = defineStore('Chat', {
                 let history = <SessionHistory>{ SessionId: x.id, Messages: [] }
                 data.forEach((y: any, z: number) => {
                     history.Messages.push({ Role: "user", Content: y["q"], Time: y["qtime"] })
-                    history.Messages.push({ Role: "assistant", Content: y["a"], Time: y["atime"] })
+                    let _aa = JSON.parse(y['a'])
+                    let aa = <AssistantAnswer>{
+                        useLLM: _aa.useLLM,
+                        text: _aa.text,
+                        jsontext: <AssistantQA[]>JSON.parse(_aa.jsontext)
+                    }
+
+                    history.Messages.push({ Role: "assistant", Content: y['a'], AssistantAnswer: aa, Time: y["atime"] })
                 })
                 this.SessionHistory.push(history)
             })
@@ -86,11 +94,18 @@ export const useChatStore = defineStore('Chat', {
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
                     x.Messages[x.Messages.length - 1] = { Role: "user", Content: data["q"], Time: data["qtime"] }
-                    x.Messages.push({ Role: "assistant", Content: data["a"], Time: data["atime"] })
+                    let _aa = JSON.parse(data['a'])
+                    let aa = <AssistantAnswer>{
+                        useLLM: _aa.useLLM,
+                        text: _aa.text,
+                        jsontext: <AssistantQA[]>JSON.parse(_aa.jsontext)
+                    }
+                    x.Messages.push({ Role: "assistant", Content: data["a"], AssistantAnswer: aa, Time: data["atime"] })
                 }
             })
             this.Question = ""
             this.State = this.State_Anwserd
+            this.ErrorMessages = ""
         }
     },
     state() {

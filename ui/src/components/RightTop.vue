@@ -4,7 +4,7 @@
             <div>{{ userStore.UserName }}</div>
             <div class="usetting">
                 <div style="position: relative;">
-                    <div class="btn">Change password</div>
+                    <!--div class="btn">Change password</div-->
                     <div class="btn" @click="logout">logout</div>
                 </div>
             </div>

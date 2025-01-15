@@ -74,6 +74,7 @@ import { type Knowledge, type KQA } from '@/types'
 import { useKnowledgeStore } from '@/store/knowledge'
 
 const AddStr = "-Add-"
+const AUTO_PUBLISH=true
 let knowledgeStore = useKnowledgeStore()
 let { UserKnowledges, QA, UserId } = storeToRefs(knowledgeStore)
 let kn = ref()
@@ -104,6 +105,9 @@ let showcancel = computed(() => {
     return true
 })
 let showpublish = computed(() => {
+    if (AUTO_PUBLISH){
+        return false
+    }
     if (showEdit.value) {
         return false;
     }

@@ -22,9 +22,23 @@
                                 <div>🧑‍🦱</div>
                             </div>
                             <div class="hc">
-                                <div>{{ s.Content }}</div>
+                                <div v-if="s.Role == 'user'">{{ s.Content }}{{ s.AssistantAnswer?.useLLM }}</div>
+                                <div v-if="s.Role == 'assistant' && s.AssistantAnswer?.useLLM">{{ s.AssistantAnswer?.text }}</div>
+                                <div v-if="s.Role == 'assistant' && !s.AssistantAnswer?.useLLM">
+                                    <div class="qa qax" style="text-align: center;font-weight: bold;">
+                                        <div>question</div>
+                                        <div>answer</div>
+                                    </div>
+                                    <div v-for="qa of s.AssistantAnswer?.jsontext" class="qa qax">
+                                        <div>{{ qa.question }}</div>
+                                        <div>{{ qa.answer }}</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    <div style="height: 20px;margin-top:10px;">
+                        <div style="color: red;">{{ ErrorMessages }}</div>
                     </div>
                     <div class="userpannel">
                         <textarea rows="1" v-model="Question" @keyup.enter="chatStore.SendMessage"></textarea>
@@ -37,9 +51,6 @@
                                     d="M3 5.51v3.71c0 .46.31.86.76.97L11 12l-7.24 1.81c-.45.11-.76.51-.76.97v3.71c0 .72.73 1.2 1.39.92l15.42-6.49c.82-.34.82-1.5 0-1.84L4.39 4.58C3.73 4.31 3 4.79 3 5.51z">
                                 </path>
                             </svg></div>
-                    </div>
-                    <div v-if="ErrorMessages != ''" class="userpannel">
-                        <div style="color: red;">{{ ErrorMessages }}</div>
                     </div>
                 </div>
             </div>
@@ -105,7 +116,6 @@ let listh = computed(() => {
     let result = height - 288;
     return result <= 100 ? 100 : result;
 })
-
 </script>
 <style scoped>
 .km {
@@ -131,7 +141,6 @@ let listh = computed(() => {
     border: 1px solid transparent;
     background-color: #F0F2F6;
     display: flex;
-    margin-top: 30px;
 }
 
 .userpannel>textarea {
@@ -187,5 +196,48 @@ let listh = computed(() => {
 
 .refresh:hover {
     color: red;
+}
+
+
+.qax {
+    border: 1px solid #F0F2F6;
+    font-size: 13px;
+    padding: 1px;
+    line-height: 20px;
+}
+
+.qax>div:first-child {
+    border-right: 1px solid #F0F2F6;
+}
+
+.qax:nth-child(2n) {
+    background-color: azure;
+}
+
+.qax:nth-child(2n+1) {
+    background-color: white;
+}
+
+.qa {
+    display: flex;
+    justify-content: left;
+}
+
+
+
+.qa>div:first-child {
+    flex: 3;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+    padding: 5px;
+}
+
+.qa>div:last-child {
+    flex: 4;
+    word-wrap: break-word;
+    word-break: break-all;
+    white-space: pre-wrap;
+    padding: 5px;
 }
 </style>
