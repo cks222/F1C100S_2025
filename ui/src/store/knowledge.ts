@@ -2,9 +2,7 @@ import { defineStore } from 'pinia'
 import {
     get_api_addknowledges, post_api_updateknowledge, api_upload_file, get_api_qas, post_api_qa, get_publish_knowledge, get_api_knowledges
 } from '@/utils/axios'
-import { type Knowledge, type KQA } from '@/types'
-import config from '@/config'
-import type KnowledgeM from '@/pages/KnowledgeM.vue'
+import { type Knowledge, type KQA, type QA } from '@/types'
 
 export const useKnowledgeStore = defineStore('Knowledge', {
     actions: {
@@ -28,16 +26,17 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         async GetQA(knowledgeid: string) {
             let totalcount = 0
             let start = 0, count = 30
-            let data = await get_api_qas(knowledgeid, start, count)
+            let data = <QA[]>[]
             this.QA = { knowledgeid: knowledgeid, QAS: [] }
-            this.QA.QAS = [].concat(data)
-            totalcount += data.length
-            while (data.length == count) {
-                start += count
+            do {
                 data = await get_api_qas(knowledgeid, start, count)
+                if (this.QA.knowledgeid != knowledgeid) {
+                    return 0
+                }
                 this.QA.QAS = this.QA.QAS.concat(data)
                 totalcount += data.length
-            }
+                start += count
+            } while (data.length == count)
             return totalcount
         },
         async RemoveQA(knowledgeid: string, qas: string) {
@@ -51,9 +50,9 @@ export const useKnowledgeStore = defineStore('Knowledge', {
         },
         async GetUserKnowledges() {
             const data = await get_api_knowledges(this.UserId, true)
-            this.UserKnowledges=[]
-            data.forEach((k:Knowledge) => {
-                if(k.currentversion!=""){
+            this.UserKnowledges = []
+            data.forEach((k: Knowledge) => {
+                if (k.currentversion != "") {
                     this.UserKnowledges.push(k)
                 }
             });

@@ -1,5 +1,5 @@
 export default {
-    host:  "http://localhost:1234",
+    host: "",//"http://localhost:1234",
     textMaxLengthMobile: 220,
     textMaxLengthPC: 300,
     headers: {

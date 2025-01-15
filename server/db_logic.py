@@ -13,13 +13,15 @@ class MyCollection:
             os.mkdir(dir)
         if not os.path.exists(self.Path):
             self._save([])
+
     def select_all(self):
         return self._read()
+
     def insert_one(self, data):
         self.insert_many([data])
-    
+
     def insert_many(self, data):
-        ad=[]
+        ad = []
         for d in data:
             dbd = copy.deepcopy(d)
             dbd["id"] = str(uuid.uuid4())
@@ -38,31 +40,32 @@ class MyCollection:
 
     def update_one(self, query, change):
         data = self.find_one(query)
-        self._update_many([data],change)
+        self._update_many([data], change)
 
     def update_many(self, query, change):
         data = self.find(query)
-        self._update_many(data,change)
+        self._update_many(data, change)
 
-    def _update_many(self,data,change):
-        if len(data)==0:
+    def _update_many(self, data, change):
+        if len(data) == 0:
             return
         for key, value in change["$set"].items():
-            keys = key.split('.')
-            d = data[0]
-            for k in keys[:-1]:
-                d = d[k]
-            d[keys[-1]] = value
-        
-        existids=[d["id"] for d in data]
-        alldata=[d for d in self._read() if d["id"] not in existids]
+            keys = key.split(".")
+            for dd in data:
+                d = dd
+                for k in keys[:-1]:
+                    d = d[k]
+                d[keys[-1]] = value
+
+        existids = [d["id"] for d in data]
+        alldata = [d for d in self._read() if d["id"] not in existids]
         alldata.extend(data)
         self._save(alldata)
 
     def _and_filter(self, data, andarry):
         ids = set(item["id"] for item in data)
         for query in andarry:
-            ids2= set(item["id"] for item in self._filter(data, query))
+            ids2 = set(item["id"] for item in self._filter(data, query))
             ids = ids & ids2
         return [item for item in data if item["id"] in ids]
 
@@ -93,18 +96,22 @@ class MyCollection:
                 key, value = list(query.items())[0]
                 keys = key.split(".")
                 if isinstance(value, dict):
-                      result = list(
+                    result = list(
                         filter(
-                            lambda item: self._get_nested_value(item, keys) in value["$in"], data
+                            lambda item: self._get_nested_value(item, keys)
+                            in value["$in"],
+                            data,
                         )
                     )
                 else:
                     result = list(
                         filter(
-                            lambda item: self._get_nested_value(item, keys) == value, data
+                            lambda item: self._get_nested_value(item, keys) == value,
+                            data,
                         )
                     )
         return result
+
     def _get_nested_value(self, item, keys):
         for key in keys:
             item = item.get(key, None)
@@ -121,11 +128,11 @@ class MyCollection:
     def _save(self, data):
         with self.lock:
             with open(self.Path, "w") as file:
-                json.dump(data,file)
+                json.dump(data, file)
 
 
 class DBLogic:
-    def __init__(self,DbDir="q:\\db\\Chat"):
+    def __init__(self, DbDir="C:\\db\\Chat"):
         self.host = DbDir
         self.Usercollection = self.get_col("User")
         self.Knowledgecollection = self.get_col("Knowledge")
@@ -205,14 +212,13 @@ class DBLogic:
         else:
             query = {"data.userid": userid}
 
-
         data = self.Knowledgecollection.find(query)
-        usermap={}
+        usermap = {}
         for u in self.Usercollection.select_all():
-            usermap[u["data"]["id"]]=u["data"]["username"]
+            usermap[u["data"]["id"]] = u["data"]["username"]
         result = [d["data"] for d in data]
         for d in result:
-            d["username"]=usermap[d["userid"]]
+            d["username"] = usermap[d["userid"]]
         return result
 
         pipeline = [

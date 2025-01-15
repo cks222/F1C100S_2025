@@ -11,7 +11,7 @@ export interface Knowledge {
     id: string,
     knowledgename: string,
     ispublic: boolean,
-    haschange:boolean,
+    haschange: boolean,
     currentversion: string,
 }
 
@@ -50,7 +50,7 @@ export interface Message {
 export interface AssistantAnswer {
     useLLM: boolean,
     text: string,
-    jsontext:AssistantQA[]
+    jsontext: AssistantQA[]
 }
 export interface AssistantQA {
     question: boolean,

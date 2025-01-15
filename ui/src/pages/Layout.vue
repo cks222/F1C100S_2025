@@ -18,8 +18,6 @@
 import LeftBar from '@/components/LeftBar.vue'
 import RightTop from '@/components/RightTop.vue'
 import { RouterView } from 'vue-router';
-import KnowledgeM from '@/pages/KnowledgeM.vue'
-import Chat from '@/pages/ChatPage.vue'
 import { ref } from 'vue';
 let isHidden = ref(false)
 </script>

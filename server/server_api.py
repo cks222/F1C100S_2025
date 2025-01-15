@@ -155,16 +155,23 @@ class API:
         sq = self.GetSimilaryQ(s["knowledgeid"], question)
         prompt = self.combine_chatpormpt(sq, history, question)
 
-        sqdata=[{"question":s["question"],"answer":s["answer"]} for s in sq]
-        a = {"useLLM":self.usellm,"text":"","jsontext":json.dumps(sqdata)}
+        sqdata = [{"question": s["question"], "answer": s["answer"]} for s in sq]
+        a = {"useLLM": self.usellm, "text": "", "jsontext": json.dumps(sqdata)}
         if self.usellm:
             a["text"] = self.Chat(prompt)
-            a["jsontext"]="[]"
-        aj=json.dumps(a)
+            a["jsontext"] = "[]"
+        aj = json.dumps(a)
         atime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.ml.add_new_history(sid, question, qtime, aj, atime, prompt)
-        return {"sessionid": sid, "q": question, "qtime": qtime, "a": aj, "atime": atime}
-    '''
+        return {
+            "sessionid": sid,
+            "q": question,
+            "qtime": qtime,
+            "a": aj,
+            "atime": atime,
+        }
+
+    """
     def api_build_knowledge(self, knowledgeid: str):
         qas = self.ml.get_qas(knowledgeid)
         knowledge = self.ml.get_knowledge_byid(knowledgeid)
@@ -180,7 +187,8 @@ class API:
             )
         self.embdb.insert_data(knowledgeid,data)
         self.ml.edit_knowledge(knowledgeid, knowledge)
-    '''
+    """
+
     def api_sessions(self, userid: str):
         return self.ml.get_sessions(userid)
 
@@ -197,8 +205,8 @@ class API:
                     answer=d["a"],
                 )
             )
-        if len(data)>0:
-            self.embdb.insert_data(knowledgeid,data)
+        if len(data) > 0:
+            self.embdb.insert_data(knowledgeid, data)
         knowledge = self.ml.get_knowledge_byid(knowledgeid)
         knowledge["currentversion"] = version
         knowledge["haschange"] = False

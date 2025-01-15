@@ -17,8 +17,8 @@ class MyMilvusData:
 
 
 class MyEmbDbClient:
-    def __init__(self, DbDir="q:\\db\\EmbDb"):
-        self.output_fields = [ "question", "answer"]
+    def __init__(self, DbDir="C:\\db\\EmbDb"):
+        self.output_fields = ["question", "answer"]
         self.fields_name = [
             "id",
             "vector",
@@ -27,7 +27,7 @@ class MyEmbDbClient:
             "timestamp",
         ]
 
-        self.knowledgefilelocks ={}
+        self.knowledgefilelocks = {}
         self.Dir = DbDir
         if not os.path.exists(DbDir):
             os.mkdir(DbDir)
@@ -42,43 +42,41 @@ class MyEmbDbClient:
             answer=answer,
         )
 
-    def insert_data(self,knowledgeid, data: List[MyMilvusData]) -> None:
+    def insert_data(self, knowledgeid, data: List[MyMilvusData]) -> None:
         if len(data) == 0:
             return
         ist_data = [
-            {field: getattr(d, field)  for field in self.fields_name} for d in data
+            {field: getattr(d, field) for field in self.fields_name} for d in data
         ]
         olddata = []
         olddata.extend(ist_data)
-        self._save(knowledgeid,olddata)
+        self._save(knowledgeid, olddata)
 
-    def search_similar(
-        self, vector: List[float], knowledgeid, top_k: int = 3
-    ) -> List:
+    def search_similar(self, vector: List[float], knowledgeid, top_k: int = 3) -> List:
         alldata = self._read(knowledgeid)
         if len(alldata) == 0:
             return []
-        return self.find_top_n_similar(alldata,vector, top_k)
-    
-    def _checklockexist(self,knowledgeid):
-        if knowledgeid not in self.knowledgefilelocks.keys():
-            self.knowledgefilelocks[knowledgeid]=threading.Lock()
+        return self.find_top_n_similar(alldata, vector, top_k)
 
-    def _read(self,knowledgeid):
+    def _checklockexist(self, knowledgeid):
+        if knowledgeid not in self.knowledgefilelocks.keys():
+            self.knowledgefilelocks[knowledgeid] = threading.Lock()
+
+    def _read(self, knowledgeid):
         self._checklockexist(knowledgeid)
         with self.knowledgefilelocks[knowledgeid]:
-            path =os.path.join(self.Dir,knowledgeid+".emb.json")
+            path = os.path.join(self.Dir, knowledgeid + ".emb.json")
             if os.path.exists(path):
                 with open(path, "r") as file:
                     data = json.load(file)
             else:
-                data=[]
+                data = []
         return data
 
-    def _save(self, knowledgeid,data):
+    def _save(self, knowledgeid, data):
         self._checklockexist(knowledgeid)
         with self.knowledgefilelocks[knowledgeid]:
-            with open(os.path.join(self.Dir,knowledgeid+".emb.json"), "w") as file:
+            with open(os.path.join(self.Dir, knowledgeid + ".emb.json"), "w") as file:
                 json.dump(data, file)
 
     def cosine_similarity(self, vec1, vec2):
@@ -91,8 +89,12 @@ class MyEmbDbClient:
         similarities = []
 
         for item in data:
-            similarity = self.cosine_similarity(np.array(item["vector"]) ,np.array( search_vector))
-            similarities.append((similarity, {"question":item["question"],"answer":item["answer"]}))
+            similarity = self.cosine_similarity(
+                np.array(item["vector"]), np.array(search_vector)
+            )
+            similarities.append(
+                (similarity, {"question": item["question"], "answer": item["answer"]})
+            )
         similarities.sort(key=lambda x: x[0], reverse=True)
 
         # 取前 n 个最相似的对象

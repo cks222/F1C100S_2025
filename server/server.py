@@ -49,8 +49,8 @@ def api_getuser_byid(userid: str):
 
 @app.post("/api/check_user")
 def check_user(userid: str = Form(...), token: str = Form(...)):
-    user=a.api_login_byid(userid, token)
-    return {"isuser": user["id"] == userid,"username":user["username"] }
+    user = a.api_login_byid(userid, token)
+    return {"isuser": user["id"] == userid, "username": user["username"]}
 
 
 @app.get("/api/has_account")

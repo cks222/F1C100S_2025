@@ -123,7 +123,10 @@ class MongoLogic:
             },
         ]
         data = self.Knowledgecollection.aggregate(pipeline)
-        return[{key: value for key, value in item.items() if key != '_id'} for item in list(data)]
+        return [
+            {key: value for key, value in item.items() if key != "_id"}
+            for item in list(data)
+        ]
 
     def get_knowledge_byid(self, knowledgeid: str):
         query = {"data.id": knowledgeid}

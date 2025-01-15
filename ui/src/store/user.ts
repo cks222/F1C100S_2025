@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
-import { 
-    check_user,api_login ,api_signup
- } from '@/utils/axios'
+import {
+    check_user, api_login, api_signup
+} from '@/utils/axios'
 import { sha256 } from 'js-sha256'
 
 export const useUserStore = defineStore('user', {
@@ -12,23 +12,20 @@ export const useUserStore = defineStore('user', {
                 this.Token = `${localStorage.getItem("token")}`
                 const data = await check_user(this.UserId, this.Token)
                 this.UserName = data.username
-                return <boolean> data.isuser
+                return <boolean>data.isuser
             }
             this.UserId = ""
-            this.Token = ""  
-            this.UserName = "" 
+            this.Token = ""
+            this.UserName = ""
             return false;
         },
         cryptoPass(password: string) {
             let token = sha256(password)
             return token;
         },
-        async getUserNameById(userid:string){
-            return 
-        },
         async login(account: string, password: string) {
-            
-            const data = await api_login(account,this.cryptoPass(password))
+
+            const data = await api_login(account, this.cryptoPass(password))
             console.log(data)
             if (data.id != "") {
                 this.UserId = data.id
