@@ -4,7 +4,7 @@ import json
 import chardet
 from fastapi import FastAPI, UploadFile, Form, File as FastFile
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse,StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -18,18 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 a = API()
-os.makedirs(r"./assets", exist_ok=True)
-app.mount("/assets", StaticFiles(directory=r"./assets"), "ui")
-
+rootdir = os.getcwd()
+os.makedirs(os.path.join(rootdir,"assets"), exist_ok=True)
+app.mount("/assets", StaticFiles(directory=os.path.join(rootdir,"assets")), "ui")
 
 @app.get("/", response_class=HTMLResponse)
 def home():
-    return FileResponse(r"./index.html")
+    return FileResponse(os.path.join(rootdir,"index.html"))
 
 
 @app.get("/favicon.ico")
 def favicon():
-    return FileResponse(r"./favicon.ico")
+    return FileResponse(os.path.join(rootdir,"favicon.ico"))
 
 
 @app.post("/api/login")
@@ -122,9 +122,12 @@ def api_history(sessionid: str):
 
 
 @app.post("/api/chat")
-async def api_chat(sessionid: str, history: str = Form(...), question: str = Form(...)):
-    return a.api_chat(sessionid=sessionid, history=history, question=question)
+async def api_chat(sessionid: str,usestream:bool, history: str = Form(...), question: str = Form(...)):
+    return a.api_chat(sessionid=sessionid, history=history, question=question,usestream=usestream)
 
+@app.get("/api/chat_stream")
+async def api_chat_stream(historyid: str ):
+    return StreamingResponse(a.api_chat_answer_stream(historyid), media_type="text/plain")
 
 @app.exception_handler(404)
 async def redirect_404(request, exec):
@@ -132,4 +135,4 @@ async def redirect_404(request, exec):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=1234)
+    uvicorn.run(app, host="0.0.0.0", port=6650)

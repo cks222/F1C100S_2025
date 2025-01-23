@@ -64,7 +64,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> 
 </template>
 <script name="klist" setup lang="ts">
 import ListQA from '@/components/ListQA.vue'
@@ -214,15 +214,23 @@ onMounted(async () => {
     if (UserKnowledges.value.length > 0) {
         knowledgeid.value = UserKnowledges.value[0].id
         tmpid.value = knowledgeid.value
-        setTimeout(() => { eqa(knowledgeid.value) }, 0)
     } else {
         showEdit.value = true
     }
 
 })
 let listh = computed(() => {
+    let notreadonly = false
+    for (let k of UserKnowledges.value) {
+        if (k.id == knowledgeid.value && knowledgeid.value != AddStr) {
+            notreadonly = k.userid == UserId.value
+        }
+    }
     let height = document.documentElement.scrollHeight;
     let result = height - 370;
+    if (!notreadonly){
+        result+=95
+    }
     return result <= 100 ? 100 : result;
 })
 </script>

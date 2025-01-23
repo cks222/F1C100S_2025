@@ -22,17 +22,24 @@
                                 <div>🧑‍🦱</div>
                             </div>
                             <div class="hc">
-                                <div v-if="s.Role == 'user'">{{ s.Content }}{{ s.AssistantAnswer?.useLLM }}</div>
-                                <div v-if="s.Role == 'assistant' && s.AssistantAnswer?.useLLM">{{ s.AssistantAnswer?.text }}</div>
-                                <div v-if="s.Role == 'assistant' && !s.AssistantAnswer?.useLLM">
-                                    <div class="qa qax" style="text-align: center;font-weight: bold;">
-                                        <div>question</div>
-                                        <div>answer</div>
+                                <div v-if="s.Role == 'user'">{{ s.Content }}</div>
+                                <div v-if="s.Role == 'assistant' && s.AssistantAnswer.useLLM">
+                                    <div class="SimQA">
+                                        <div class="xiala"></div>
+                                        <div class="qa qax" style="text-align: center;font-weight: bold;">
+                                            <div>question</div>
+                                            <div>answer</div>
+                                        </div>
+                                        <div v-for="qa of s.AssistantAnswer.jsontext" class="qa qax">
+                                            <div>{{ qa.question }}</div>
+                                            <div>{{ qa.answer }}</div>
+                                        </div>
+                                        <br>
+                                        <hr>
+                                        <br>
                                     </div>
-                                    <div v-for="qa of s.AssistantAnswer?.jsontext" class="qa qax">
-                                        <div>{{ qa.question }}</div>
-                                        <div>{{ qa.answer }}</div>
-                                    </div>
+                                    
+                                    {{ s.AssistantAnswer.text }}
                                 </div>
                             </div>
                         </div>
@@ -41,7 +48,7 @@
                         <div style="color: red;">{{ ErrorMessages }}</div>
                     </div>
                     <div class="userpannel">
-                        <textarea rows="1" v-model="Question" @keyup.enter="chatStore.SendMessage"></textarea>
+                        <textarea rows="1" v-model="Question" @keyup.enter.prevent="chatStore.SendMessage"></textarea>
                         <div class="btn sendbtn" @click="chatStore.SendMessage"><svg viewBox="0 0 24 24"
                                 aria-hidden="true" focusable="false" fill="currentColor"
                                 xmlns="http://www.w3.org/2000/svg" color="inherit"
@@ -62,7 +69,7 @@ import { useChatStore } from '@/store/chat'
 import { storeToRefs } from 'pinia'
 import { computed, onMounted, ref, watch, nextTick } from 'vue'
 const chatStore = useChatStore()
-let { Sessions, EnabledKnowledges, SessionId, SessionHistory, State, State_Sent, ErrorMessages, Question } = storeToRefs(chatStore)
+let { Sessions, EnabledKnowledges, SessionId, SessionHistory, State,   ErrorMessages, Question } = storeToRefs(chatStore)
 let knowledgeid = ref("")
 let mh = ref()
 let MessageHistory = computed(() => {
@@ -76,10 +83,13 @@ let MessageHistory = computed(() => {
 watch(() => {
     for (let sh of SessionHistory.value) {
         if (sh.SessionId == SessionId.value) {
-            return sh.Messages
+            let xx=""
+            sh.Messages.slice(-5).forEach(x => xx += "|"+ x.Content.length);
+            console.log(xx)
+            return xx
         }
     }
-    return []
+    return "[]"
 }, () => {
     nextTick(() => { mh.value.scrollTop = mh.value.scrollHeight; });
 })
@@ -178,6 +188,7 @@ let listh = computed(() => {
 
 .head {
     font-size: 25px;
+    user-select: none;
 }
 
 .hc {
@@ -239,5 +250,54 @@ let listh = computed(() => {
     word-break: break-all;
     white-space: pre-wrap;
     padding: 5px;
+}
+.SimQA{
+    height: 12px;
+    overflow: hidden;
+}
+.SimQA:hover{
+    animation: showxiala 1s forwards;
+}
+.xiala{
+    height: 10px;
+    text-align: center;
+    color: white;
+    animation: kfxiala 30s infinite;
+    border-radius: 5px;
+    align-items: center;
+    display: flex;
+    justify-content: center;
+}
+.xiala::before{
+    height: 0px;
+    width:  0px;
+    display: inline-block;
+    content: '';
+    border-top:8px solid gray;
+    border-left:10px solid transparent;
+    border-right:10px solid transparent;
+}
+.SimQA:hover>.xiala{
+    display: none;
+}
+@keyframes showxiala {
+    0% {
+        height: 10px;
+    }
+    50% {
+        height: 70px;
+    }
+    100% {
+        height: auto;
+    }
+}@keyframes kfxiala {
+    0%,100% {        
+        background-color: white;
+        border:1px solid gainsboro
+    }
+    50% {
+        background-color: gainsboro;
+        border:1px solid gray
+    } 
 }
 </style>

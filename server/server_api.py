@@ -9,7 +9,7 @@ import json
 
 class API:
     def __init__(self):
-        self.usellm = False
+        self.usellm = True
         self.autoPublish = True
         self.ml = DBLogic()
         self.llm = MyChatModel()
@@ -21,6 +21,10 @@ class API:
 
     def Chat(self, messages):
         return self.llm.Chat(messages)
+
+    async def Chat_Stream(self, messages):
+        async for chunk in self.llm.Chat_Stream(messages):
+            yield chunk
 
     def GetSimilaryQ(self, knowledgeid, question):
         vector = self.ToEmb(question)
@@ -125,7 +129,7 @@ class API:
         prompt = [
             {
                 "role": "system",
-                "content": "You are a chatbot, and you need to summarize the answers based on the user's' found some similar qa 'in order to answer their questions",
+                "content": "You are a chatbot, and you need to summarize the answers based on the user's found some similar QA in order to answer their questions.",
             }
         ]
         """
@@ -138,17 +142,13 @@ class API:
                     }
                 )
         """
-        qa = ""
-        if len(sq) > 0:
-            for q in sq:
-                qa += "question:" + q["question"] + "\nanswer:" + q["answer"] + "\n"
         prompt.append(
-            {"role": "user", "content": "I found some similar questions:" + qa}
+            {"role": "user", "content": "I found some similar QAs:" + json.dumps(sq)}
         )
         prompt.append({"role": "user", "content": question})
         return prompt
 
-    def api_chat(self, sessionid: str, history, question: str):
+    def api_chat(self, sessionid: str, history, question: str, usestream: bool ):
         sid = sessionid
         qtime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         s = self.ml.get_session_byid(sid)
@@ -158,12 +158,13 @@ class API:
         sqdata = [{"question": s["question"], "answer": s["answer"]} for s in sq]
         a = {"useLLM": self.usellm, "text": "", "jsontext": json.dumps(sqdata)}
         if self.usellm:
-            a["text"] = self.Chat(prompt)
-            a["jsontext"] = "[]"
+            a["text"] = "thinking..." if usestream else self.Chat(prompt)
+            a["jsontext"] = json.dumps(sqdata)
         aj = json.dumps(a)
         atime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        self.ml.add_new_history(sid, question, qtime, aj, atime, prompt)
+        historyid = self.ml.add_new_history(sid, question, qtime, aj, atime, prompt)
         return {
+            "id": historyid,
             "sessionid": sid,
             "q": question,
             "qtime": qtime,
@@ -171,23 +172,15 @@ class API:
             "atime": atime,
         }
 
-    """
-    def api_build_knowledge(self, knowledgeid: str):
-        qas = self.ml.get_qas(knowledgeid)
-        knowledge = self.ml.get_knowledge_byid(knowledgeid)
-        knowledge["currentversion"] = self.ml.getGuid()
-        self.ml.edit_knowledge(knowledgeid, {"currentversion": +1})
-        category = knowledge["currentversion"]
-        data = []
-        for qa in qas:
-            data.append(
-                self.embdb.build_data(
-                    category=category, vector=qa["e"], question=qa["q"], answer=qa["a"]
-                )
-            )
-        self.embdb.insert_data(knowledgeid,data)
-        self.ml.edit_knowledge(knowledgeid, knowledge)
-    """
+    async def api_chat_answer_stream(self, historyid: str):
+        history = self.ml.get_chat_history_by_id(historyid)
+        answer = ""
+        async for chunk in self.Chat_Stream(history["pormpt"]):
+            answer = answer + chunk
+            yield chunk
+        aj = json.loads(history["a"])
+        aj["text"] = answer
+        self.ml.chat_history_answer_by_id(historyid, json.dumps(aj))
 
     def api_sessions(self, userid: str):
         return self.ml.get_sessions(userid)

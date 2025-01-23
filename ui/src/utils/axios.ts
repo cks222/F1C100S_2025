@@ -87,7 +87,11 @@ async function api_chat(sessionid: string, history: string, question: string) {
     let data = new FormData();
     data.append("history", history);
     data.append("question", question);
-    return await post("/api/chat?sessionid=" + sessionid, data)
+    return await post("/api/chat?usestream=true&sessionid=" + sessionid, data)
+}
+async function chat_stream_reader (historyid:string){
+    const response = await fetch(config.host + '/api/chat_stream?historyid='+historyid);
+    return response.body?.getReader();
 }
 export {
     api_login,
@@ -106,5 +110,5 @@ export {
     post_api_qa,
     api_sessions,
     api_add_sessions,
-    api_history, api_chat
+    api_history, api_chat,chat_stream_reader
 }

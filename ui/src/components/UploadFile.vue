@@ -27,7 +27,7 @@
             </div>
             <div>
                 <div v-show="!isuploading" class="btn">Browse file</div>
-                <input type="file" ref="preparedfile" :disabled="isuploading" @change="uf" hidden />
+                <input type="file" ref="preparedfile" :disabled="isuploading" @change="uf" hidden accept=".txt" />
             </div>
         </div>
     </div>

@@ -41,9 +41,10 @@ export interface SessionHistory {
 }
 
 export interface Message {
+    Id: string,
     Role: string,
     Content: string,
-    AssistantAnswer?: AssistantAnswer,
+    AssistantAnswer: AssistantAnswer,
     Time: string
 }
 

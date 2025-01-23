@@ -10,6 +10,9 @@ lerna-debug.log*
 ui/node_modules
 .DS_Store
 ui/dist
+server/assets
+server/index.html
+server/*.ico
 ui/.vscode
 dist-ssr
 coverage

@@ -12,7 +12,7 @@ const router = createRouter({
             path: "/login",
             component: Login,
             meta: {
-                title: "登录"
+                title: "Login"
             }
         },
         {
@@ -25,7 +25,7 @@ const router = createRouter({
                     path: "/chat",
                     component: ChatPage,
                     meta: {
-                        title: "询问"
+                        title: "QA"
                     }
                 },
                 {
@@ -33,7 +33,7 @@ const router = createRouter({
                     path: "/knowledge",
                     component: KnowledgeM,
                     meta: {
-                        title: "知识"
+                        title: "Knowledge"
                     }
                 }
             ]

@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import {
-    api_sessions, api_add_sessions, api_del_sessions, get_api_knowledges, api_history, api_chat
+    api_sessions, api_add_sessions, api_del_sessions, get_api_knowledges, api_history, api_chat, chat_stream_reader
 } from '@/utils/axios'
 import config from '@/config';
 import { type Session, type Knowledge, type Message, type SessionHistory, type AssistantAnswer, type AssistantQA } from '@/types';
@@ -47,7 +47,7 @@ export const useChatStore = defineStore('Chat', {
                 const data = await api_history(x.id)
                 let history = <SessionHistory>{ SessionId: x.id, Messages: [] }
                 data.forEach((y: any, z: number) => {
-                    history.Messages.push({ Role: "user", Content: y["q"], Time: y["qtime"] })
+                    history.Messages.push({ Id: y["id"], Role: "user", Content: y["q"],AssistantAnswer:<AssistantAnswer>{}, Time: y["qtime"] })
                     let _aa = JSON.parse(y['a'])
                     let aa = <AssistantAnswer>{
                         useLLM: _aa.useLLM,
@@ -55,7 +55,7 @@ export const useChatStore = defineStore('Chat', {
                         jsontext: <AssistantQA[]>JSON.parse(_aa.jsontext)
                     }
 
-                    history.Messages.push({ Role: "assistant", Content: y['a'], AssistantAnswer: aa, Time: y["atime"] })
+                    history.Messages.push({ Id: y["id"], Role: "assistant", Content: y['a'], AssistantAnswer: aa, Time: y["atime"] })
                 })
                 this.SessionHistory.push(history)
             })
@@ -84,28 +84,63 @@ export const useChatStore = defineStore('Chat', {
                     Messages = x.Messages
                 }
             })
+            let q = this.Question+""
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
-                    x.Messages.push({ Role: "user", Content: this.Question, Time: "" })
+                    x.Messages.push({ Id: "", Role: "user", Content: this.Question, Time: "" ,AssistantAnswer:<AssistantAnswer>{}})
                 }
             })
-            const data = await api_chat(sid, JSON.stringify(Messages), this.Question)
-
+            this.Question = ""
+            this.ErrorMessages = ""
+            const data = await api_chat(sid, JSON.stringify(Messages), q)
+            let _aa = JSON.parse(data['a'])
             this.SessionHistory.forEach(x => {
                 if (x.SessionId == sid) {
-                    x.Messages[x.Messages.length - 1] = { Role: "user", Content: data["q"], Time: data["qtime"] }
-                    let _aa = JSON.parse(data['a'])
+                    x.Messages[x.Messages.length - 1] = { Id: data["id"], Role: "user", Content: data["q"], Time: data["qtime"] ,AssistantAnswer:<AssistantAnswer>{}}
+
                     let aa = <AssistantAnswer>{
                         useLLM: _aa.useLLM,
                         text: _aa.text,
                         jsontext: <AssistantQA[]>JSON.parse(_aa.jsontext)
                     }
-                    x.Messages.push({ Role: "assistant", Content: data["a"], AssistantAnswer: aa, Time: data["atime"] })
+                    x.Messages.push({ Id: data["id"], Role: "assistant", Content: data["a"], AssistantAnswer: aa, Time: data["atime"] })
                 }
             })
-            this.Question = ""
-            this.State = this.State_Anwserd
-            this.ErrorMessages = ""
+            if (_aa.useLLM == true) {
+                this.refreshLLMStreamAnswer(sid, data["id"])
+            }
+        },
+        refreshLLMStreamAnswer(sessionid: string, id: string) {
+            setTimeout(async () => {
+                let reader = await chat_stream_reader(id)
+                const decoder = new TextDecoder();
+                if (reader) {
+                    let a = ""
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        a += decoder.decode(value);
+                        this.SessionHistory.forEach(x => {
+                            if (x.SessionId == sessionid) {
+                                x.Messages.forEach(y => {
+                                    if (y.Id == id && y.Role == "assistant") {
+                                        let _aa = <AssistantAnswer>{
+                                            useLLM: y.AssistantAnswer.useLLM,
+                                            text: a,
+                                            jsontext: y.AssistantAnswer.jsontext
+                                        }
+
+                                        y.AssistantAnswer = _aa
+                                    }
+                                })
+                            }
+                        })
+                    }
+                    
+                    this.State = this.State_Anwserd
+                    this.ErrorMessages =""
+                }
+            }, 0);
         }
     },
     state() {

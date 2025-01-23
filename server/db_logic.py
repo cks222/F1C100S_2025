@@ -329,8 +329,10 @@ class DBLogic:
     def add_new_history(
         self, sessionid: str, q: str, qtime: str, a: str, atime: str, pormpt: str
     ):
+        historyid = self.getGuid()
         data = {
             "data": {
+                "id": historyid,
                 "sessionid": sessionid,
                 "q": q,
                 "qtime": qtime,
@@ -340,7 +342,17 @@ class DBLogic:
             }
         }
         self.ChatHistorycollection.insert_one(data)
-        return sessionid
+        return historyid
+
+    def get_chat_history_by_id(self, id: str):
+        query = {"data.id": id}
+        data = self.ChatHistorycollection.find_one(query)
+        return data["data"]
+
+    def chat_history_answer_by_id(self, id: str, answerjson: str):
+        query = {"data.id": id}
+        newvalues = {"$set": {"data.a": answerjson}}
+        self.ChatHistorycollection.update_one(query, newvalues)
 
     def get_chat_history(self, sessionid: str):
         query = {"data.sessionid": sessionid}
@@ -363,6 +375,6 @@ class DBLogic:
         self.ChatSessioncollection.update_one(query, newvalues)
 
     def set_session_isdisabled_false(self, sessionid: str):
-        s = self.get_session_byid(sessionid)
-        s["isdisabled"] = False
-        self.edit_knowledge(sessionid, s)
+        query = {"data.id": sessionid}
+        newvalues = {"$set": {"data.isdisabled": False}}
+        self.ChatSessioncollection.update_one(query, newvalues)
